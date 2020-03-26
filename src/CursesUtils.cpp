@@ -7,8 +7,6 @@
 
 #include "CursesUtils.h"
 
-#include <ncurses.h>
-
 namespace CursesUtils {
 
 	void InitCurses(bool hasLineBuffering, bool hasEcho, bool hasKeypad, bool isDynamic, int cursor) {
@@ -29,39 +27,6 @@ namespace CursesUtils {
 
 		// Set the cursor to visible or invisible
 		curs_set(cursor);
-	}
-
-
-	void ShutdownCurses() {
-		// Deallocate curses screen/window
-		endwin();
-	}
-
-
-	void RefreshScreen() {
-		refresh();
-	}
-
-
-	int GetRows() {
-		return LINES;
-	}
-
-
-	int GetColumns() {
-		return COLS;
-	}
-
-
-	void GetWindowSize(int& maxX, int& maxY) {
-		// Store the max x and y position of the given window.
-		getmaxyx(stdscr, maxY, maxX);
-	}
-
-
-	void MoveCursorAtPosition(const int x, const int y) {
-		// Set the position of the cursor to the given position.
-		move(y, x);
 	}
 
 
@@ -86,18 +51,6 @@ namespace CursesUtils {
 
 		// Move the cursor at the given position and print the string.
 		mvaddstr(y, x, cString);
-	}
-
-
-	void PrintFormattedAtPosition(const int x, const int y, const char* cString) {
-		// Move the cursor at the given position and print the formatted output.
-		mvprintw(y, x, cString);
-	}
-
-
-	void PrintFormatted(const char* cString) {
-		// Print the formatted output.
-		printw(cString);
 	}
 
 }

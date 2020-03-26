@@ -8,7 +8,19 @@
 #ifndef CURSESUTILS_H_
 #define CURSESUTILS_H_
 
+#include <ncurses.h>
+
 namespace CursesUtils {
+
+	/*
+	 * Arrow keys.
+	 */
+	enum class ArrowKey {
+		UP = KEY_UP,
+		RIGHT = KEY_RIGHT,
+		DOWN = KEY_DOWN,
+		LEFT = KEY_LEFT
+	};
 
 	/*
 	 * Initializes curses library.
@@ -27,36 +39,58 @@ namespace CursesUtils {
 	/*
 	 * Shuts down the curses library.
 	 */
-	void ShutdownCurses();
+	inline void ShutdownCurses() {
+		// Deallocate curses screen/window
+		endwin();
+	}
 
 	/*
 	 * Refreshes the screen, so everything can be displayed properly.
 	 */
-	void RefreshScreen();
+	inline void RefreshScreen() {
+		refresh();
+	}
 
 	/*
 	 * Returns the number of rows on the screen.
 	 */
-	int GetRows();
+	inline int GetRows() {
+		return LINES;
+	}
 
 	/*
 	 * Returns the number of columns on the screen.
 	 */
-	int GetColumns();
+	inline int GetColumns() {
+		return COLS;
+	}
 
 	/*
 	 * Gets the max numbers of rows and cols on the screen.
 	 * maxX: # of columns.
 	 * maxY: # of rows.
 	 */
-	void GetWindowSize(int& maxX, int& maxY);
+	inline void GetWindowSize(int& maxX, int& maxY) {
+		// Store the max x and y position of the given window.
+		getmaxyx(stdscr, maxY, maxX);
+	}
+
+	/*
+	 * Clears the screen from any output.
+	 */
+	inline void ClearScreen() {
+		clear();
+	}
 
 	/*
 	 * Moves the cursor at the given position on the screen.
 	 * x: Horizontal position on the screen.
 	 * y: Vertical position on the screen.
 	 */
-	void MoveCursorAtPosition(const int x, const int y);
+	inline void MoveCursorAtPosition(const int x, const int y) {
+		// Set the position of the cursor to the given position.
+		move(y, x);
+	}
 
 	/*
 	 * Moves the cursor to the given position and prints a character (attributes can be OR'd with the character) at that position.
@@ -78,17 +112,38 @@ namespace CursesUtils {
 
 	/*
 	 * Moves the cursor to the given position and prints a formatted output at that position.
-	 * cString: The formatted output (Make sure to use this the same way you use printf).
+	 * cString: The formatted output.
 	 * x: Horizontal position on the screen.
 	 * y: Vertical position on the screen.
 	 */
-	void PrintFormattedAtPosition(const int x, const int y, const char* cString);
+	inline void PrintFormattedAtPosition(const int x, const int y, const char* cString) {
+		// Move the cursor at the given position and print the formatted output.
+		mvprintw(y, x, "%s", cString);
+	}
 
 	/*
 	 * Prints a formatted output at the cursor's current position.
-	 * cString: The formatted output (Make sure to use this the same way you use printf).
+	 * cString: The formatted output.
 	 */
-	void PrintFormatted(const char* cString);
+	inline void PrintFormatted(const char* cString) {
+		// Print the formatted output.
+		printw("%s", cString);
+	}
+
+	/*
+	 * Returns the key pressed on the keyboard.
+	 */
+	inline int GetCharacter() {
+		return getch();
+	}
+
+	/*
+	 * Sets the given string to the typed character sequence.
+	 * cString: The string to set.
+	 */
+	inline void GetString(char* cString) {
+		getstr(cString);
+	}
 
 }
 
