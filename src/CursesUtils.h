@@ -23,6 +23,23 @@ namespace CursesUtils {
 	};
 
 	/*
+	 * Attributes.
+	 */
+	enum class Attribute {
+		NORMAL = A_NORMAL,			// Normal display.
+		STANDOUT = A_STANDOUT,		// Best highlighting mode of the terminal.
+		UNDERLINE = A_UNDERLINE,	// Underlining.
+		REVERSE = A_REVERSE,		// Reverse video.
+		BLINK = A_BLINK,			// Blinking.
+		DIM = A_DIM,				// Half bright.
+		BOLD = A_BOLD,				// Extra bright or bold.
+		PROTECT = A_PROTECT,		// Protected mode.
+		INVIS = A_INVIS,			// Invisible or blank mode.
+		ALTCHARSET = A_ALTCHARSET,	// Alternate character set.
+		CHARTEXT = A_CHARTEXT		// Bit-mask to extract a character.
+	};
+
+	/*
 	 * Initializes curses library.
 	 * hasLineBuffering: If set to true, it will be the default terminal mode.
 	 * If set to false, every character will be passed to the program before hitting the newline.
@@ -63,6 +80,14 @@ namespace CursesUtils {
 	 */
 	inline int GetColumns() {
 		return COLS;
+	}
+
+	/*
+	 * Gets the current cursor's position on the screen.
+	 */
+	inline void GetCursorPosition(int& x, int& y) {
+		// Store the x and y position of the cursor in the given variables.
+		getyx(stdscr, y, x);
 	}
 
 	/*
@@ -143,6 +168,22 @@ namespace CursesUtils {
 	 */
 	inline void GetString(char* cString) {
 		getstr(cString);
+	}
+
+	/*
+	 * Turns on one or more attributes (for more attributes at the same time, bitwise OR is needed).
+	 * attr: Attribute or bit mask of attributes to turn on.
+	 */
+	inline void TurnOnAttribute(Attribute attr) {
+		attron(attr);
+	}
+
+	/*
+	 * Turns off one or more attributes (for more attributes at the same time, bitwise OR is needed).
+	 * attr: Attribute or bit mask of attributes to turn off.
+	 */
+	inline void TurnOffAttribute(Attribute attr) {
+		attroff(attr);
 	}
 
 }
