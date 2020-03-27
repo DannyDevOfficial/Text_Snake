@@ -9,7 +9,9 @@
 
 namespace CursesUtils {
 
-	void InitCurses(bool hasLineBuffering, bool hasEcho, bool hasKeypad, bool isDynamic, int cursor) {
+	void InitCurses(bool hasColors, bool hasLineBuffering,
+	                bool hasEcho, bool hasKeypad,
+	                bool isDynamic, int cursor) {
 		// Initialize curses screen
 		initscr();
 
@@ -27,6 +29,9 @@ namespace CursesUtils {
 
 		// Set the cursor to visible or invisible
 		curs_set(cursor);
+
+		// Set the usage of colors if possible.
+		if (hasColors && has_colors())	start_color();
 	}
 
 
@@ -51,6 +56,20 @@ namespace CursesUtils {
 
 		// Move the cursor at the given position and print the string.
 		mvaddstr(y, x, cString);
+	}
+
+
+	void ToggleAttribute(Attribute attr, bool isOn) {
+		// Attribute/s is/are set/unset based on the given flag.
+		if (isOn)	attron(static_cast<int>(attr));
+		else		attroff(static_cast<int>(attr));
+	}
+
+
+	void ToggleColorPair(const short id, bool isOn) {
+		// Color pair is set/unset based on the given flag.
+		if (isOn)	attron(COLOR_PAIR(id));
+		else		attroff(COLOR_PAIR(id));
 	}
 
 }

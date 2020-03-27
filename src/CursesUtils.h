@@ -40,7 +40,22 @@ namespace CursesUtils {
 	};
 
 	/*
+	 * Colors.
+	 */
+	enum class Color {
+		BLACK = COLOR_BLACK,
+		RED = COLOR_RED,
+		GREEN = COLOR_GREEN,
+		YELLOW = COLOR_YELLOW,
+		BLUE = COLOR_BLUE,
+		MAGENTA = COLOR_MAGENTA,
+		CYAN = COLOR_CYAN,
+		WHITE = COLOR_WHITE
+	};
+
+	/*
 	 * Initializes curses library.
+	 * hasColors: If true, then curses will be set to use colors if possible. False, otherwise.
 	 * hasLineBuffering: If set to true, it will be the default terminal mode.
 	 * If set to false, every character will be passed to the program before hitting the newline.
 	 * hasEcho: If true, characters will be displayed as they're typed.
@@ -51,7 +66,9 @@ namespace CursesUtils {
 	 * If false, it will be the opposite.
 	 * cursor: 0 for invisible, 1 for normal visibility, 2 for very visible.
 	 */
-	void InitCurses(bool hasLineBuffering = false, bool hasEcho = false, bool hasKeypad = true, bool isDynamic = true, int cursor = 0);
+	void InitCurses(bool hasColors = false, bool hasLineBuffering = false,
+	                bool hasEcho = false, bool hasKeypad = true,
+	                bool isDynamic = true, int cursor = 0);
 
 	/*
 	 * Shuts down the curses library.
@@ -171,20 +188,39 @@ namespace CursesUtils {
 	}
 
 	/*
-	 * Turns on one or more attributes (for more attributes at the same time, bitwise OR is needed).
-	 * attr: Attribute or bit mask of attributes to turn on.
+	 * Toggles one or more attributes (for more attributes at the same time, bitwise OR is needed).
+	 * attr: Attribute or bit mask of attributes to toggle.
+	 * isOn: Should the attribute/s be active or disabled.
 	 */
-	inline void TurnOnAttribute(Attribute attr) {
-		attron(attr);
+	void ToggleAttribute(Attribute attr, bool isOn);
+
+	/*
+	 * Makes a color pair, which consists of an ID, a foreground and a background color.
+	 * id: Identifier for the pair, to be able to use it later. (Make sure to remember this id).
+	 * fg: Foreground color.
+	 * bg: Background color.
+	 */
+	inline void MakeColorPair(const short id, Color fg, Color bg) {
+		init_pair(id, static_cast<short>(fg), static_cast<short>(bg));
 	}
 
 	/*
-	 * Turns off one or more attributes (for more attributes at the same time, bitwise OR is needed).
-	 * attr: Attribute or bit mask of attributes to turn off.
+	 * Gets the color content of a pair defined by the given id.
+	 * id: Identifier of the pair to get the colors of.
+	 * fg: The foreground color will be stored in here.
+	 * bg: The background color will be stored in here.
+	 * (These are going to be short values equivalent to the values stored in the pair, they can be put back in a variable of type Color);
 	 */
-	inline void TurnOffAttribute(Attribute attr) {
-		attroff(attr);
+	inline void GetPairColors(const short id, short& fg, short& bg) {
+		pair_content(id, &fg, &bg);
 	}
+
+	/*
+	 * Toggles a color pair.
+	 * id: Identifier of the pair to toggle on/off.
+	 * isOn: Should the color pair be active or disabled.
+	 */
+	void ToggleColorPair(const short id, bool isOn);
 
 }
 
