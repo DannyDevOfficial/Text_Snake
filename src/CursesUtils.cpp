@@ -43,7 +43,7 @@ namespace CursesUtils {
 		}
 
 		// Move the cursor at the given position and print the character.
-		mvaddch(character, y, x);
+		mvaddch(y, x, character);
 	}
 
 
