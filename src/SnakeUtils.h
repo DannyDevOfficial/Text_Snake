@@ -9,6 +9,7 @@
 #define SNAKEUTILS_H_
 
 #include <vector>
+#include <string>
 
 #include "CursesUtils.h"
 
@@ -19,13 +20,46 @@ namespace TextSnake {
 	 */
 	namespace Constants {
 
-		const char SPR_SNAKE_HEAD = '@';
-		const char SPR_SNAKE_TAIL = '*';
-		const char SPR_APPLE = 'o';
+		static const char SPR_SNAKE_HEAD = '@';
+		static const char SPR_SNAKE_TAIL = '*';
+		static const char SPR_APPLE = 'o';
 
-		const unsigned int FPS = 20;
+		static const unsigned int FPS = 20;
 
 	} /* namespace Constants */
+
+	/*
+	 * Enumeration for screens.
+	 */
+	enum class Screen {
+		MAIN_MENU,
+		MAIN_GAME,
+		GAME_OVER,
+		HIGH_SCORES
+	};
+
+	/*
+	 * Enumeration for game states.
+	 */
+	enum class State {
+		SHOW_MAIN_MENU,
+		START_GAME,
+		SHOW_MAIN_GAME,
+		END_GAME,
+		SHOW_GAME_OVER,
+		LOAD_HIGH_SCORES,
+		SHOW_HIGH_SCORES
+	};
+
+	/*
+	 * Represents the directions for the snake movement.
+	 */
+	enum class Direction {
+		UP,
+		RIGHT,
+		DOWN,
+		LEFT
+	};
 
 	/*
 	 * Represents a position (x and y) in 2D space.
@@ -49,6 +83,7 @@ namespace TextSnake {
 	 */
 	struct Snake {
 		Vector2D position;
+		Direction direction;
 		int speed;
 		char sprite;
 		CursesUtils::Color color;
@@ -61,6 +96,15 @@ namespace TextSnake {
 	struct Apple {
 		Vector2D position;
 		char sprite;
+		CursesUtils::Color color;
+	};
+
+	/*
+	 * Represents a score.
+	 */
+	struct Score {
+		unsigned int score;
+		std::string name;
 	};
 
 	/*
@@ -69,8 +113,10 @@ namespace TextSnake {
 	struct Game {
 		unsigned short lives;
 		unsigned int applesEaten;
-		unsigned int score;
-		// TODO Add variable for current game state and current screen.
+		unsigned int currentScore;
+		std::vector<Score> highScores;
+		State currentState;
+		Screen currentScreen;
 	};
 
 } /* namespace TextSnake */
