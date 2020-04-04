@@ -6,11 +6,12 @@
 // Description : Snake game in C++, Ansi-style
 //============================================================================
 
-#include <iostream>
-using namespace std;
+#include "SnakeUtils.h"
 
 int main() {
 
+	// Play the game.
+	TextSnake::Start();
 
 	return 0;
 }

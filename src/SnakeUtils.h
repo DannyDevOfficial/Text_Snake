@@ -25,8 +25,15 @@ namespace TextSnake {
 		static const char SPR_APPLE = 'o';
 
 		static const unsigned int FPS = 20;
+		static const unsigned int SNAKE_DEFAULT_SPEED = 2;
+		static const CursesUtils::Color DEFAULT_COLOR = CursesUtils::Color::WHITE;
+		static const unsigned short TOTAL_LIVES = 3;
+		static const char QUIT_BUTTON = 'q';
 
 	} /* namespace Constants */
+
+
+	///////////////////////////// Data /////////////////////////////
 
 	/*
 	 * Enumeration for screens.
@@ -84,7 +91,7 @@ namespace TextSnake {
 	struct Snake {
 		Vector2D position;
 		Direction direction;
-		int speed;
+		unsigned int speed;
 		char sprite;
 		CursesUtils::Color color;
 		std::vector<TailPiece> tail;
@@ -118,6 +125,34 @@ namespace TextSnake {
 		State currentState;
 		Screen currentScreen;
 	};
+
+
+	///////////////////////////// Functions /////////////////////////////
+
+	/*
+	 * Starts up the game.
+	 */
+	void Start();
+
+	/*
+	 * Initializes the snake's data.
+	 * s: snake to initialize.
+	 */
+	void InitSnake(Snake& s);
+
+	/*
+	 * Initializes an apple's data
+	 * a: apple to initialize.
+	 * p: horizontal and vertical position on the screen.
+	 */
+	void InitApple(Apple& a, const Vector2D& p);
+
+	/*
+	 * Initializes the game's data.
+	 * g: game to initialize.
+	 */
+	void InitGame(Game& g);
+
 
 } /* namespace TextSnake */
 
