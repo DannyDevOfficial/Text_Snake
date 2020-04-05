@@ -25,13 +25,19 @@ namespace TextSnake {
 		InitGame(mainGame);
 		InitSnake(theSnake);
 
+		// TODO Remove the following line after the basic game is implemented.
+		mainGame.currentState = State::SHOW_MAIN_GAME;
 
 		// Flag that tells the game loop when to quit.
 		bool quit = false;
 
+		// Used for the input handling.
+		int input = 0;
+
 		// Take the time at the start of the game.
 		clock_t lastTime = clock();
 
+		// Game loop.
 		while (!quit) {
 			// Take the time at the start of every loop.
 			clock_t currentTime = clock();
@@ -43,8 +49,26 @@ namespace TextSnake {
 				// Update the last time to be the current time.
 				lastTime = currentTime;
 
-				// TODO Handle the input from the user.
-				// TODO Whenever the user hits the quit button the game ends, otherwise it goes on normally.
+				// Handle the input from the user.
+				HandleInput(input, mainGame, theSnake);
+
+				// Whenever the user hits the quit button the game ends, otherwise it goes on normally.
+				if (input != Constants::QUIT_BUTTON) {
+					// Clear the screen before updating and drawing the next frame.
+					CursesUtils::ClearScreen();
+
+					// Update the game logic.
+					UpdateGame(mainGame, theSnake);
+
+					// Draw the game.
+					DrawGame(mainGame, theSnake);
+
+					// Refresh the screen to show the up to date game.
+					CursesUtils::RefreshScreen();
+				} else {
+					// Quitting...
+					quit = true;
+				}
 			}
 		}
 
@@ -113,6 +137,89 @@ namespace TextSnake {
 
 		// Game state initially set to show main menu.
 		g.currentState = State::SHOW_MAIN_MENU;
+	}
+
+
+	void HandleInput(int& inpt, const Game& g, Snake& s) {
+		// Store the current input.
+		inpt = CursesUtils::GetCharacter();
+
+		// TODO Adjust the FPS when the snake is moving vertically.
+		// It goes faster vertically because the screen is smaller in that direction (80x24)
+
+		// Check what kind of input the user entered.
+		switch (inpt) {
+			case static_cast<int>(CursesUtils::ArrowKey::UP): {
+				// Set the snake direction to upwards whenever in game.
+				if (g.currentState == State::SHOW_MAIN_GAME)	s.direction = Direction::UP;
+			}
+				break;
+			case static_cast<int>(CursesUtils::ArrowKey::RIGHT): {
+				// Set the snake direction to the right whenever in game.
+				if (g.currentState == State::SHOW_MAIN_GAME)	s.direction = Direction::RIGHT;
+			}
+				break;
+			case static_cast<int>(CursesUtils::ArrowKey::DOWN): {
+				// Set the snake direction to downwards whenever in game.
+				if (g.currentState == State::SHOW_MAIN_GAME)	s.direction = Direction::DOWN;
+			}
+				break;
+			case static_cast<int>(CursesUtils::ArrowKey::LEFT): {
+				// Set the snake direction to the left whenever in game.
+				if (g.currentState == State::SHOW_MAIN_GAME)	s.direction = Direction::LEFT;
+			}
+				break;
+		}
+	}
+
+
+	void UpdateGame(Game& g, Snake& s) {
+		// Update snake's position.
+		TellSnakeToMove(s);
+	}
+
+
+	void DrawGame(const Game& g, const Snake& s) {
+		// Draw the snake.
+		CursesUtils::PrintCharAtPosition(s.sprite, s.position.x, s.position.y);
+	}
+
+
+	void TellSnakeToMove(Snake& snake) {
+		// Check the snake current direction.
+		switch (snake.direction) {
+			case Direction::UP:
+				MoveSnake(snake, 0, -1);
+				break;
+			case Direction::RIGHT:
+				MoveSnake(snake, 1, 0);
+				break;
+			case Direction::DOWN:
+				MoveSnake(snake, 0, 1);
+				break;
+			case Direction::LEFT:
+				MoveSnake(snake, -1, 0);
+				break;
+		}
+	}
+
+
+	void MoveSnake(Snake& snake, const int x, const int y) {
+		// Take the speed into account when changing the position.
+		unsigned int newX = x * snake.speed;
+		unsigned int newY = y * snake.speed;
+
+		// Set the new position.
+		snake.position.x += newX;
+		snake.position.y += newY;
+
+		// TODO Make sure all the tail pieces move alongside the head.
+
+		// TODO Make sure the snake loses one life/dies if it hits its body.
+		// TODO Make sure the snake loses one life/dies if it hits the wall.
+
+		// TODO Make sure the snake has its body lengthened if it eats an apple.
+		// TODO Make sure the user gains score whenever the snake eats an apple.
 	}
 
 } /* namespace TextSnake */

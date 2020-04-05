@@ -24,8 +24,8 @@ namespace TextSnake {
 		static const char SPR_SNAKE_TAIL = '*';
 		static const char SPR_APPLE = 'o';
 
-		static const unsigned int FPS = 20;
-		static const unsigned int SNAKE_DEFAULT_SPEED = 2;
+		static const unsigned int FPS = 10;
+		static const unsigned int SNAKE_DEFAULT_SPEED = 1;
 		static const CursesUtils::Color DEFAULT_COLOR = CursesUtils::Color::WHITE;
 		static const unsigned short TOTAL_LIVES = 3;
 		static const char QUIT_BUTTON = 'q';
@@ -152,6 +152,42 @@ namespace TextSnake {
 	 * g: game to initialize.
 	 */
 	void InitGame(Game& g);
+
+	/*
+	 * Analyzes the input and act accordingly.
+	 * inpt: Input to write to.
+	 * g: Instance of the game.
+	 * s: Instance of the snake.
+	 */
+	void HandleInput(int& inpt, const Game& g, Snake& s);
+
+	/*
+	 * Calls all the functions that deal with game updates.
+	 * g: Instance of the current game.
+	 * s: Instance of the snake.
+	 */
+	void UpdateGame(Game& g, Snake& s);
+
+	/*
+	 * Draws the game to the screen.
+	 * g: Instance of the game.
+	 * s: Instance of the snake.
+	 */
+	void DrawGame(const Game& g, const Snake& s);
+
+	/*
+	 * Calls the snake movement function picking its x and y coords based on the given direction.
+	 * snake: The snake of which to update the position.
+	 */
+	void TellSnakeToMove(Snake& snake);
+
+	/*
+	 * Sets the snake current position based on the given direction.
+	 * snake: The snake of which to update the position.
+	 * x: The new position on the x axis.
+	 * y: The new position on the y axis.
+	 */
+	void MoveSnake(Snake& snake, const int x, const int y);
 
 
 } /* namespace TextSnake */
