@@ -24,7 +24,7 @@ namespace TextSnake {
 		static const char SPR_SNAKE_TAIL = '*';
 		static const char SPR_APPLE = 'o';
 
-		static const unsigned int FPS = 10;
+		static const unsigned int DEFAULT_FPS = 6;
 		static const unsigned int SNAKE_DEFAULT_SPEED = 1;
 		static const CursesUtils::Color DEFAULT_COLOR = CursesUtils::Color::WHITE;
 		static const unsigned short TOTAL_LIVES = 3;
@@ -160,6 +160,12 @@ namespace TextSnake {
 	 * s: Instance of the snake.
 	 */
 	void HandleInput(int& inpt, const Game& g, Snake& s);
+
+	/*
+	 * Tweaks the FPS based on the snake direction and returns it.
+	 * snake: Instance of the snake.
+	 */
+	unsigned int AdjustFPSbasedOnDirection(const Snake& snake);
 
 	/*
 	 * Calls all the functions that deal with game updates.

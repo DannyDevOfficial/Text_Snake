@@ -8,6 +8,7 @@
 #include "SnakeUtils.h"
 
 #include <ctime>
+#include <cmath>
 
 namespace TextSnake {
 
@@ -34,6 +35,10 @@ namespace TextSnake {
 		// Used for the input handling.
 		int input = 0;
 
+		// FPS needs to be adjusted because the screen is larger than longer,
+		// which means that the snake is faster when moving vertically.
+		unsigned int adjustedFPS = Constants::DEFAULT_FPS;
+
 		// Take the time at the start of the game.
 		clock_t lastTime = clock();
 
@@ -45,7 +50,7 @@ namespace TextSnake {
 			clock_t deltaTime = currentTime - lastTime;
 
 			// Only run game logic in respect to the wanted frame rate.
-			if (deltaTime > (CLOCKS_PER_SEC / Constants::FPS)) {
+			if (deltaTime > (CLOCKS_PER_SEC / adjustedFPS)) {
 				// Update the last time to be the current time.
 				lastTime = currentTime;
 
@@ -56,6 +61,9 @@ namespace TextSnake {
 				if (input != Constants::QUIT_BUTTON) {
 					// Clear the screen before updating and drawing the next frame.
 					CursesUtils::ClearScreen();
+
+					// Adjusting FPS.
+					adjustedFPS = AdjustFPSbasedOnDirection(theSnake);
 
 					// Update the game logic.
 					UpdateGame(mainGame, theSnake);
@@ -144,9 +152,6 @@ namespace TextSnake {
 		// Store the current input.
 		inpt = CursesUtils::GetCharacter();
 
-		// TODO Adjust the FPS when the snake is moving vertically.
-		// It goes faster vertically because the screen is smaller in that direction (80x24)
-
 		// Check what kind of input the user entered.
 		switch (inpt) {
 			case static_cast<int>(CursesUtils::ArrowKey::UP): {
@@ -170,6 +175,27 @@ namespace TextSnake {
 			}
 				break;
 		}
+	}
+
+
+	unsigned int AdjustFPSbasedOnDirection(const Snake& snake) {
+		// True when the direction is up or down.
+		bool isMovingVertically = (snake.direction == Direction::UP) || (snake.direction == Direction::DOWN);
+
+		// Get the screen width and height.
+		int width = 0;
+		int height = 0;
+		CursesUtils::GetWindowSize(width, height);
+
+		// Get the width/height ratio and make some calculations on it to get a more precise number.
+		int whRatio =  static_cast<int>(ceil(width / height)) + 2;
+
+		// Calculate the new fps for the vertical movement, which is based on the height of the screen.
+		int vFPS = static_cast<int>(ceil(height / whRatio));
+
+		// When the snake is moving vertically, change the frame rate to adjust the movement speed to be equal
+		// on both horizontal and vertical directions.
+		return isMovingVertically ? vFPS : Constants::DEFAULT_FPS;
 	}
 
 
