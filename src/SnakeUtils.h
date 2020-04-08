@@ -8,6 +8,9 @@
 #ifndef SNAKEUTILS_H_
 #define SNAKEUTILS_H_
 
+// Macro used to enable debugging functionalities in game.
+//#define SNAKE_UTILS_IN_GAME_DEBUG
+
 #include <vector>
 #include <string>
 
@@ -29,6 +32,10 @@ namespace TextSnake {
 		static const CursesUtils::Color DEFAULT_COLOR = CursesUtils::Color::WHITE;
 		static const unsigned short TOTAL_LIVES = 3;
 		static const char QUIT_BUTTON = 'q';
+
+#ifdef SNAKE_UTILS_IN_GAME_DEBUG
+		static const char ADD_SNAKE_PIECE_BUTTON = 'a';
+#endif
 
 	} /* namespace Constants */
 
@@ -80,7 +87,10 @@ namespace TextSnake {
 	 * Represents a piece of the snake's tail.
 	 */
 	struct TailPiece {
-		Vector2D position;
+		Vector2D currentPosition;
+		Vector2D previousPosition;
+		Direction currentDirection;
+		Direction previousDirection;
 		char sprite;
 		CursesUtils::Color color;
 	};
@@ -89,8 +99,10 @@ namespace TextSnake {
 	 * Represents the snake.
 	 */
 	struct Snake {
-		Vector2D position;
-		Direction direction;
+		Vector2D currentPosition;
+		Vector2D previousPosition;
+		Direction currentDirection;
+		Direction previousDirection;
 		unsigned int speed;
 		char sprite;
 		CursesUtils::Color color;
@@ -182,6 +194,12 @@ namespace TextSnake {
 	void DrawGame(const Game& g, const Snake& s);
 
 	/*
+	 * Updates the position of every piece of the snake's tail so they're ready for the next frame.
+	 * snake: Instance of the snake.
+	 */
+	void UpdateTailPiecesPosition(Snake& snake);
+
+	/*
 	 * Calls the snake movement function picking its x and y coords based on the given direction.
 	 * snake: The snake of which to update the position.
 	 */
@@ -194,6 +212,31 @@ namespace TextSnake {
 	 * y: The new position on the y axis.
 	 */
 	void MoveSnake(Snake& snake, const int x, const int y);
+
+	/*
+	 * Instantiates a new tail piece at the right position and initializes its values.
+	 * s: Instance of the snake.
+	 */
+	void MakeTailPiece(Snake& s);
+
+	/*
+	 * Sets the direction and position of a newly created tail piece.
+	 * snake: Instance of the snake.
+	 * tailPiece: Newly instantiated tail piece.
+	 */
+	void SetNewTailPieceDirAndPos(const Snake& snake, TailPiece& tailPiece);
+
+	/*
+	 * Draws the snake's head.
+	 * snake: Instance of the snake.
+	 */
+	void DrawHead(const Snake& snake);
+
+	/*
+	 * Draws the tail pieces.
+	 * snake: Instance of the snake.
+	 */
+	void DrawTail(const Snake& snake);
 
 
 } /* namespace TextSnake */

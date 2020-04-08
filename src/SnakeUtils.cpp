@@ -90,15 +90,21 @@ namespace TextSnake {
 		unsigned int midX = CursesUtils::GetColumns() / 2;
 		unsigned int midY = CursesUtils::GetRows() / 2;
 
-		// Set the snake's position to be the middle of the screen.
-		s.position.x = midX;
-		s.position.y = midY;
+		// Set the snake's current and previous positions to be the middle of the screen.
+		s.currentPosition.x = midX;
+		s.currentPosition.y = midY;
+
+		s.previousPosition.x = midX;
+		s.previousPosition.y = midY;
 
 		// Random number between 0 and 3.
 		int randDir = rand() % 4;
 
 		// Set the direction to be a random one among the 4 available ones.
-		s.direction = static_cast<Direction>(randDir);
+		s.currentDirection = static_cast<Direction>(randDir);
+
+		// Previous direction is currently the same as the current one.
+		s.previousDirection = s.currentDirection;
 
 		// Set the snake's head sprite.
 		s.sprite = Constants::SPR_SNAKE_HEAD;
@@ -156,31 +162,62 @@ namespace TextSnake {
 		switch (inpt) {
 			case static_cast<int>(CursesUtils::ArrowKey::UP): {
 				// Set the snake direction to upwards whenever in game.
-				if (g.currentState == State::SHOW_MAIN_GAME)	s.direction = Direction::UP;
+				if (g.currentState == State::SHOW_MAIN_GAME) {
+					// Don't need to update directions when we're already going in the same direction.
+					if (s.currentDirection != Direction::UP) {
+						s.previousDirection = s.currentDirection;
+						s.currentDirection = Direction::UP;
+					}
+				}
 			}
 				break;
 			case static_cast<int>(CursesUtils::ArrowKey::RIGHT): {
 				// Set the snake direction to the right whenever in game.
-				if (g.currentState == State::SHOW_MAIN_GAME)	s.direction = Direction::RIGHT;
+				if (g.currentState == State::SHOW_MAIN_GAME) {
+					// Don't need to update directions when we're already going in the same direction.
+					if (s.currentDirection != Direction::RIGHT) {
+						s.previousDirection = s.currentDirection;
+						s.currentDirection = Direction::RIGHT;
+					}
+				}
 			}
 				break;
 			case static_cast<int>(CursesUtils::ArrowKey::DOWN): {
 				// Set the snake direction to downwards whenever in game.
-				if (g.currentState == State::SHOW_MAIN_GAME)	s.direction = Direction::DOWN;
+				if (g.currentState == State::SHOW_MAIN_GAME) {
+					// Don't need to update directions when we're already going in the same direction.
+					if (s.currentDirection != Direction::DOWN) {
+						s.previousDirection = s.currentDirection;
+						s.currentDirection = Direction::DOWN;
+					}
+				}
 			}
 				break;
 			case static_cast<int>(CursesUtils::ArrowKey::LEFT): {
 				// Set the snake direction to the left whenever in game.
-				if (g.currentState == State::SHOW_MAIN_GAME)	s.direction = Direction::LEFT;
+				if (g.currentState == State::SHOW_MAIN_GAME) {
+					// Don't need to update directions when we're already going in the same direction.
+					if (s.currentDirection != Direction::LEFT) {
+						s.previousDirection = s.currentDirection;
+						s.currentDirection = Direction::LEFT;
+					}
+				}
 			}
 				break;
+#ifdef SNAKE_UTILS_IN_GAME_DEBUG
+			case Constants::ADD_SNAKE_PIECE_BUTTON: {
+				// When in game, add a piece to the snake's tail.
+				if (g.currentState == State::SHOW_MAIN_GAME)	MakeTailPiece(s);
+			}
+			break;
+#endif
 		}
 	}
 
 
 	unsigned int AdjustFPSbasedOnDirection(const Snake& snake) {
 		// True when the direction is up or down.
-		bool isMovingVertically = (snake.direction == Direction::UP) || (snake.direction == Direction::DOWN);
+		bool isMovingVertically = (snake.currentDirection == Direction::UP) || (snake.currentDirection == Direction::DOWN);
 
 		// Get the screen width and height.
 		int width = 0;
@@ -200,20 +237,65 @@ namespace TextSnake {
 
 
 	void UpdateGame(Game& g, Snake& s) {
-		// Update snake's position.
-		TellSnakeToMove(s);
+		// Only update the snake if in game.
+		if (g.currentState == State::SHOW_MAIN_GAME) {
+			// Update snake's position.
+			TellSnakeToMove(s);
+
+			// Update the tail's position.
+			UpdateTailPiecesPosition(s);
+		}
 	}
 
 
 	void DrawGame(const Game& g, const Snake& s) {
-		// Draw the snake.
-		CursesUtils::PrintCharAtPosition(s.sprite, s.position.x, s.position.y);
+		// Only draw the snake if in game.
+		if (g.currentState == State::SHOW_MAIN_GAME) {
+			// Draw the snake.
+			DrawHead(s);
+			DrawTail(s);
+		}
+	}
+
+
+	void UpdateTailPiecesPosition(Snake& snake) {
+		// Get out if there is no tail.
+		if (snake.tail.size() == 0)
+			return;
+
+		// Update all the pieces' position and direction.
+		for (std::size_t i = 0; i < snake.tail.size(); i++) {
+			// The first tail piece follows the head.
+			if (i == 0) {
+				// Update previous, current position and direction.
+				snake.tail[i].previousDirection = snake.tail[i].currentDirection;
+				snake.tail[i].currentDirection = snake.previousDirection;
+
+				snake.tail[i].previousPosition.x = snake.tail[i].currentPosition.x;
+				snake.tail[i].previousPosition.y = snake.tail[i].currentPosition.y;
+				snake.tail[i].currentPosition.x = snake.previousPosition.x;
+				snake.tail[i].currentPosition.y = snake.previousPosition.y;
+
+				// Move onto the next piece.
+				continue;
+			}
+
+			// Tail pieces normally follow their predecessors.
+			// Update previous, current position and direction.
+			snake.tail[i].previousDirection = snake.tail[i].currentDirection;
+			snake.tail[i].currentDirection = snake.tail[i - 1].previousDirection;
+
+			snake.tail[i].previousPosition.x = snake.tail[i].currentPosition.x;
+			snake.tail[i].previousPosition.y = snake.tail[i].currentPosition.y;
+			snake.tail[i].currentPosition.x = snake.tail[i - 1].previousPosition.x;
+			snake.tail[i].currentPosition.y = snake.tail[i - 1].previousPosition.y;
+		}
 	}
 
 
 	void TellSnakeToMove(Snake& snake) {
 		// Check the snake current direction.
-		switch (snake.direction) {
+		switch (snake.currentDirection) {
 			case Direction::UP:
 				MoveSnake(snake, 0, -1);
 				break;
@@ -231,21 +313,129 @@ namespace TextSnake {
 
 
 	void MoveSnake(Snake& snake, const int x, const int y) {
+		// Set the previous position before we set the new one.
+		snake.previousPosition.x = snake.currentPosition.x;
+		snake.previousPosition.y = snake.currentPosition.y;
+
 		// Take the speed into account when changing the position.
 		unsigned int newX = x * snake.speed;
 		unsigned int newY = y * snake.speed;
 
 		// Set the new position.
-		snake.position.x += newX;
-		snake.position.y += newY;
-
-		// TODO Make sure all the tail pieces move alongside the head.
+		snake.currentPosition.x += newX;
+		snake.currentPosition.y += newY;
 
 		// TODO Make sure the snake loses one life/dies if it hits its body.
 		// TODO Make sure the snake loses one life/dies if it hits the wall.
 
-		// TODO Make sure the snake has its body lengthened if it eats an apple.
+		// TODO Make sure to call MakeTailPiece() whenever the snake eats an apple.
 		// TODO Make sure the user gains score whenever the snake eats an apple.
+	}
+
+
+	void MakeTailPiece(Snake& s) {
+		// Instantiate a new TailPiece and initialize it.
+		TailPiece tp;
+		tp.color = s.color;
+		tp.sprite = Constants::SPR_SNAKE_TAIL;
+
+		// Set its direction and position.
+		SetNewTailPieceDirAndPos(s, tp);
+
+		// Add the tail piece to the vector.
+		s.tail.push_back(tp);
+	}
+
+
+	void SetNewTailPieceDirAndPos(const Snake& snake, TailPiece& tailPiece) {
+		// Used to set the position.
+		bool isFirstPiece = false;
+
+		// First piece will follow the head.
+		if (snake.tail.size() == 0) {
+			tailPiece.currentDirection = snake.currentDirection;
+			tailPiece.previousDirection = snake.previousDirection;
+
+			isFirstPiece = true;
+		} else {
+			tailPiece.currentDirection = snake.tail.back().currentDirection;
+			tailPiece.previousDirection = snake.tail.back().previousDirection;
+
+			isFirstPiece = false;
+		}
+
+		// Set position based on direction.
+		// We want to place the new piece one spot behind the preceding piece/head.
+		// We find the spot behind the preceding piece by knowing what direction it's moving towards.
+		switch (tailPiece.currentDirection) {
+			case Direction::UP: {
+				if (isFirstPiece) {
+					tailPiece.currentPosition.x = snake.currentPosition.x;
+					tailPiece.currentPosition.y = snake.currentPosition.y + 1;
+				} else {
+					tailPiece.currentPosition.x = snake.tail.back().currentPosition.x;
+					tailPiece.currentPosition.y = snake.tail.back().currentPosition.y + 1;
+				}
+
+				// Since this piece was just created it doesn't have a previous position yet.
+				tailPiece.previousPosition.x = tailPiece.currentPosition.x;
+				tailPiece.previousPosition.y = tailPiece.currentPosition.y;
+			}
+				break;
+			case Direction::RIGHT: {
+				if (isFirstPiece) {
+					tailPiece.currentPosition.x = snake.currentPosition.x - 1;
+					tailPiece.currentPosition.y = snake.currentPosition.y;
+				} else {
+					tailPiece.currentPosition.x = snake.tail.back().currentPosition.x - 1;
+					tailPiece.currentPosition.y = snake.tail.back().currentPosition.y;
+				}
+
+				// Since this piece was just created it doesn't have a previous position yet.
+				tailPiece.previousPosition.x = tailPiece.currentPosition.x;
+				tailPiece.previousPosition.y = tailPiece.currentPosition.y;
+			}
+				break;
+			case Direction::DOWN: {
+				if (isFirstPiece) {
+					tailPiece.currentPosition.x = snake.currentPosition.x;
+					tailPiece.currentPosition.y = snake.currentPosition.y - 1;
+				} else {
+					tailPiece.currentPosition.x = snake.tail.back().currentPosition.x;
+					tailPiece.currentPosition.y = snake.tail.back().currentPosition.y - 1;
+				}
+
+				// Since this piece was just created it doesn't have a previous position yet.
+				tailPiece.previousPosition.x = tailPiece.currentPosition.x;
+				tailPiece.previousPosition.y = tailPiece.currentPosition.y;
+			}
+				break;
+			case Direction::LEFT: {
+				if (isFirstPiece) {
+					tailPiece.currentPosition.x = snake.currentPosition.x + 1;
+					tailPiece.currentPosition.y = snake.currentPosition.y;
+				} else {
+					tailPiece.currentPosition.x = snake.tail.back().currentPosition.x + 1;
+					tailPiece.currentPosition.y = snake.tail.back().currentPosition.y;
+				}
+
+				// Since this piece was just created it doesn't have a previous position yet.
+				tailPiece.previousPosition.x = tailPiece.currentPosition.x;
+				tailPiece.previousPosition.y = tailPiece.currentPosition.y;
+			}
+				break;
+		}
+	}
+
+
+	void DrawHead(const Snake& snake) {
+		CursesUtils::PrintCharAtPosition(snake.sprite, snake.currentPosition.x, snake.currentPosition.y);
+	}
+
+
+	void DrawTail(const Snake& snake) {
+		for (int i = 0; i < snake.tail.size(); i++)
+			CursesUtils::PrintCharAtPosition(snake.tail[i].sprite, snake.tail[i].currentPosition.x, snake.tail[i].currentPosition.y);
 	}
 
 } /* namespace TextSnake */
