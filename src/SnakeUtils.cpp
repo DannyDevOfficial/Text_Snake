@@ -230,7 +230,7 @@ namespace TextSnake {
 		// Only update the snake if in game.
 		if (g.currentState == State::SHOW_MAIN_GAME) {
 			// Update snake's position.
-			TellSnakeToMove(s);
+			TellSnakeToMove(s, g);
 
 			// Update the tail's position.
 			UpdateTailPiecesPosition(s);
@@ -286,26 +286,26 @@ namespace TextSnake {
 	}
 
 
-	void TellSnakeToMove(Snake& snake) {
+	void TellSnakeToMove(Snake& snake, Game& game) {
 		// Check the snake current direction.
 		switch (snake.currentDirection) {
 			case Direction::UP:
-				MoveSnake(snake, 0, -1);
+				MoveSnake(snake, 0, -1, game);
 				break;
 			case Direction::RIGHT:
-				MoveSnake(snake, 1, 0);
+				MoveSnake(snake, 1, 0, game);
 				break;
 			case Direction::DOWN:
-				MoveSnake(snake, 0, 1);
+				MoveSnake(snake, 0, 1, game);
 				break;
 			case Direction::LEFT:
-				MoveSnake(snake, -1, 0);
+				MoveSnake(snake, -1, 0, game);
 				break;
 		}
 	}
 
 
-	void MoveSnake(Snake& snake, const int x, const int y) {
+	void MoveSnake(Snake& snake, const int x, const int y, Game& game) {
 		// Set the previous position before we set the new one.
 		snake.previousPosition.x = snake.currentPosition.x;
 		snake.previousPosition.y = snake.currentPosition.y;
@@ -318,11 +318,29 @@ namespace TextSnake {
 		snake.currentPosition.x += newX;
 		snake.currentPosition.y += newY;
 
+		// Check whether the snake ate an apple.
+		EatAppleOnCollision(snake, game);
+
 		// TODO Make sure the snake loses one life/dies if it hits its body.
 		// TODO Make sure the snake loses one life/dies if it hits the wall.
+	}
 
-		// TODO Make sure to call MakeTailPiece() whenever the snake eats an apple.
+
+	void EatAppleOnCollision(Snake& snk, Game& gm) {
+		// Snake didn't collide with an apple.
+		if ((snk.currentPosition.x != gm.apple.position.x) || (snk.currentPosition.y != gm.apple.position.y))
+			return;
+
+		// Apple is no longer on the screen when the snake eats it.
+		gm.isAppleOnScreen = false;
+
+		// Increase length of the snake's tail.
+		MakeTailPiece(snk);
+
 		// TODO Make sure the user gains score whenever the snake eats an apple.
+
+		// Spawn a new apple.
+		SpawnApple(gm, snk);
 	}
 
 

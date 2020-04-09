@@ -197,7 +197,7 @@ namespace TextSnake {
 	 * Calls the snake movement function picking its x and y coords based on the given direction.
 	 * snake: The snake of which to update the position.
 	 */
-	void TellSnakeToMove(Snake& snake);
+	void TellSnakeToMove(Snake& snake, Game& game);
 
 	/*
 	 * Sets the snake current position based on the given direction.
@@ -205,7 +205,14 @@ namespace TextSnake {
 	 * x: The new position on the x axis.
 	 * y: The new position on the y axis.
 	 */
-	void MoveSnake(Snake& snake, const int x, const int y);
+	void MoveSnake(Snake& snake, const int x, const int y, Game& game);
+
+	/*
+	 * On collision with an apple, the snake will eat it and increase its score.
+	 * snk: Instance of the snake.
+	 * gm: Instance of the game.
+	 */
+	void EatAppleOnCollision(Snake& snk, Game& gm);
 
 	/*
 	 * Spawns an apple whenever it's possible.
