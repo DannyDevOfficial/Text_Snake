@@ -131,8 +131,9 @@ namespace TextSnake {
 	 */
 	struct Game {
 		unsigned short lives;
-		unsigned int applesEaten;
 		unsigned int currentScore;
+		Apple apple;
+		bool isAppleOnScreen;
 		std::vector<Score> highScores;
 		State currentState;
 		Screen currentScreen;
@@ -151,13 +152,6 @@ namespace TextSnake {
 	 * s: snake to initialize.
 	 */
 	void InitSnake(Snake& s);
-
-	/*
-	 * Initializes an apple's data
-	 * a: apple to initialize.
-	 * p: horizontal and vertical position on the screen.
-	 */
-	void InitApple(Apple& a, const Vector2D& p);
 
 	/*
 	 * Initializes the game's data.
@@ -214,6 +208,28 @@ namespace TextSnake {
 	void MoveSnake(Snake& snake, const int x, const int y);
 
 	/*
+	 * Spawns an apple whenever it's possible.
+	 * game: Instance of the game.
+	 * snake: Instance of the snake.
+	 */
+	void SpawnApple(Game& game, const Snake& snake);
+
+	/*
+	 * Picks a random position on the screen free of any obstacles
+	 * and assigns it to the given argument.
+	 * s: Instance of the snake.
+	 * p: Position to fill in.
+	 */
+	void PickRandomApplePos(const Snake& s, Vector2D& p);
+
+	/*
+	 * Initializes an apple's data
+	 * a: apple to initialize.
+	 * p: horizontal and vertical position on the screen.
+	 */
+	void InitApple(Apple& a, const Vector2D& p);
+
+	/*
 	 * Instantiates a new tail piece at the right position and initializes its values.
 	 * s: Instance of the snake.
 	 */
@@ -237,6 +253,12 @@ namespace TextSnake {
 	 * snake: Instance of the snake.
 	 */
 	void DrawTail(const Snake& snake);
+
+	/*
+	 * Draws an apple.
+	 * appl: Apple to draw.
+	 */
+	void DrawApple(const Apple& appl);
 
 
 } /* namespace TextSnake */

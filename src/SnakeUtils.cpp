@@ -26,6 +26,9 @@ namespace TextSnake {
 		InitGame(mainGame);
 		InitSnake(theSnake);
 
+		// Spawn the first apple.
+		SpawnApple(mainGame, theSnake);
+
 		// TODO Remove the following line after the basic game is implemented.
 		mainGame.currentState = State::SHOW_MAIN_GAME;
 
@@ -120,25 +123,12 @@ namespace TextSnake {
 	}
 
 
-	void InitApple(Apple& a, const Vector2D& p) {
-		// Set the apple's position.
-		a.position.x = p.x;
-		a.position.y = p.y;
-
-		// Set the apple's sprite.
-		a.sprite = Constants::SPR_APPLE;
-
-		// Set the apple's default color;
-		a.color = Constants::DEFAULT_COLOR;
-	}
-
-
 	void InitGame(Game& g) {
 		// Total lives available.
 		g.lives = Constants::TOTAL_LIVES;
 
-		// No apples eaten at the beginning.
-		g.applesEaten = 0;
+		// No apples on the screen during initialization.
+		g.isAppleOnScreen = false;
 
 		// Score is 0 at the start.
 		g.currentScore = 0;
@@ -254,6 +244,9 @@ namespace TextSnake {
 			// Draw the snake.
 			DrawHead(s);
 			DrawTail(s);
+
+			// Draw the apple if there's one on screen.
+			if (g.isAppleOnScreen)	DrawApple(g.apple);
 		}
 	}
 
@@ -330,6 +323,89 @@ namespace TextSnake {
 
 		// TODO Make sure to call MakeTailPiece() whenever the snake eats an apple.
 		// TODO Make sure the user gains score whenever the snake eats an apple.
+	}
+
+
+	void SpawnApple(Game& game, const Snake& snake) {
+		// Can't spawn an apple if there's already one on the screen.
+		if (game.isAppleOnScreen)	return;
+
+		// Calculate its position.
+		Vector2D randomPos;
+		PickRandomApplePos(snake, randomPos);
+
+		// Initialize this apple.
+		InitApple(game.apple, randomPos);
+
+		// Since the apple has been created, the flag will be updated.
+		game.isAppleOnScreen = true;
+	}
+
+
+	void PickRandomApplePos(const Snake& s, Vector2D& p) {
+		// Establish the min and max x and y coords on the screen where
+		// the apple can be spawned.
+		int xMin = 0;
+		int yMin = 2;
+
+		int xMax;
+		int yMax;
+		CursesUtils::GetWindowSize(xMax, yMax);
+
+		// Flag to indicate whether the random spot on the screen is free or not.
+		bool isFree = false;
+
+		int randomX = 0;
+		int randomY = 0;
+
+		// Keep generating a random position until we find a free spot on the screen.
+		do {
+			// Get the random position between min and max.
+			randomX = (rand() % (xMax - xMin)) + xMin;
+			randomY = (rand() % (yMax - yMin)) + yMin;
+
+			// Check every single piece of the snake, including the head, to see
+			// if it happens to be in the same spot as the random one.
+
+			// Head.
+			if ((s.currentPosition.x == randomX) && (s.currentPosition.y == randomY)) {
+				isFree = false;
+
+				// No need to check for the tail if the head is already in the same position as the random one.
+				break;
+			} else {
+				isFree = true;
+			}
+
+			// Tail.
+			for (std::size_t i = 0; i < s.tail.size(); i++) {
+				if ((s.tail[i].currentPosition.x == randomX) && (s.tail[i].currentPosition.y == randomY)) {
+					isFree = false;
+
+					// Don't check other pieces if this one already matches up with the random one.
+					break;
+				} else {
+					isFree = true;
+				}
+			}
+		} while (!isFree);
+
+		// If we got here then we know a good random position was found.
+		p.x = randomX;
+		p.y = randomY;
+	}
+
+
+	void InitApple(Apple& a, const Vector2D& p) {
+		// Set the apple's position.
+		a.position.x = p.x;
+		a.position.y = p.y;
+
+		// Set the apple's sprite.
+		a.sprite = Constants::SPR_APPLE;
+
+		// Set the apple's default color;
+		a.color = Constants::DEFAULT_COLOR;
 	}
 
 
@@ -436,6 +512,11 @@ namespace TextSnake {
 	void DrawTail(const Snake& snake) {
 		for (int i = 0; i < snake.tail.size(); i++)
 			CursesUtils::PrintCharAtPosition(snake.tail[i].sprite, snake.tail[i].currentPosition.x, snake.tail[i].currentPosition.y);
+	}
+
+
+	void DrawApple(const Apple& appl) {
+		CursesUtils::PrintCharAtPosition(appl.sprite, appl.position.x, appl.position.y);
 	}
 
 } /* namespace TextSnake */
