@@ -241,6 +241,9 @@ namespace TextSnake {
 	void DrawGame(const Game& g, const Snake& s) {
 		// Only draw the snake if in game.
 		if (g.currentState == State::SHOW_MAIN_GAME) {
+			// Draw the HUD.
+			DrawHUD(g);
+
 			// Draw the snake.
 			DrawHead(s);
 			DrawTail(s);
@@ -318,11 +321,46 @@ namespace TextSnake {
 		snake.currentPosition.x += newX;
 		snake.currentPosition.y += newY;
 
+		// Check whether the snake hits a wall or itself.
+		DieOnCollision(snake, game);
+
 		// Check whether the snake ate an apple.
 		EatAppleOnCollision(snake, game);
+	}
 
-		// TODO Make sure the snake loses one life/dies if it hits its body.
-		// TODO Make sure the snake loses one life/dies if it hits the wall.
+
+	void DieOnCollision(const Snake& snk, Game& gm) {
+		// Wall collisions.
+		// Snake position is the same as either border of the screen.
+		bool vWallCollision = (snk.currentPosition.y <= Constants::Y_MIN) ||
+				(snk.currentPosition.y >= CursesUtils::GetRows());
+		bool hWallCollision = (snk.currentPosition.x <= Constants::X_MIN) ||
+				(snk.currentPosition.x >= CursesUtils::GetColumns());
+
+		// Tail Collision.
+		bool tailCollision = false;
+		if (snk.tail.size() > 0) {
+			for (std::size_t i = 0; i < snk.tail.size(); i++) {
+				// Head position is the same as the tail piece position.
+				if ((snk.currentPosition.x == snk.tail[i].currentPosition.x) &&
+						(snk.currentPosition.y == snk.tail[i].currentPosition.y)) {
+					tailCollision = true;
+
+					// No need to check for other pieces since this one already collided.
+					break;
+				}
+			}
+		}
+
+		// If a collision happened, make sure to lose one life or die.
+		if (vWallCollision || hWallCollision || tailCollision) {
+			// Lose a life.
+			gm.lives--;
+
+			// TODO Implement the reset and restart functions.
+//			if (gm.lives > 0)	ResetGame(snk, gm);
+//			else				RestartGame(snk, gm);
+		}
 	}
 
 
@@ -361,15 +399,6 @@ namespace TextSnake {
 
 
 	void PickRandomApplePos(const Snake& s, Vector2D& p) {
-		// Establish the min and max x and y coords on the screen where
-		// the apple can be spawned.
-		int xMin = 0;
-		int yMin = 2;
-
-		int xMax;
-		int yMax;
-		CursesUtils::GetWindowSize(xMax, yMax);
-
 		// Flag to indicate whether the random spot on the screen is free or not.
 		bool isFree = false;
 
@@ -379,8 +408,8 @@ namespace TextSnake {
 		// Keep generating a random position until we find a free spot on the screen.
 		do {
 			// Get the random position between min and max.
-			randomX = (rand() % (xMax - xMin)) + xMin;
-			randomY = (rand() % (yMax - yMin)) + yMin;
+			randomX = (rand() % (CursesUtils::GetColumns() - Constants::X_MIN)) + Constants::X_MIN;
+			randomY = (rand() % (CursesUtils::GetRows() - Constants::Y_MIN)) + Constants::Y_MIN;
 
 			// Check every single piece of the snake, including the head, to see
 			// if it happens to be in the same spot as the random one.
@@ -519,6 +548,33 @@ namespace TextSnake {
 			}
 				break;
 		}
+	}
+
+
+	void DrawHUD(const Game& game) {
+		// Lives.
+		Vector2D livesPos;
+		livesPos.x = 0;
+		livesPos.y = 0;
+		DrawLives(game, livesPos);
+
+		// Score.
+		Vector2D scorePos;
+		scorePos.x = CursesUtils::GetColumns() - Constants::SCORE_HUD_WIDTH;
+		scorePos.y = 0;
+		DrawScore(game, scorePos);
+	}
+
+
+	void DrawScore(const Game& g, const Vector2D& pos) {
+		std::string scoreHUD = "Score: " + std::to_string(g.currentScore);
+		CursesUtils::PrintFormattedAtPosition(pos.x, pos.y, scoreHUD.c_str());
+	}
+
+
+	void DrawLives(const Game& g, const Vector2D& pos) {
+		std::string livesHUD = "Lives: " + std::to_string(g.lives);
+		CursesUtils::PrintFormattedAtPosition(pos.x, pos.y, livesHUD.c_str());
 	}
 
 

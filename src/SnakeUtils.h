@@ -32,6 +32,9 @@ namespace TextSnake {
 		static const CursesUtils::Color DEFAULT_COLOR = CursesUtils::Color::WHITE;
 		static const unsigned short TOTAL_LIVES = 3;
 		static const char QUIT_BUTTON = 'q';
+		static const int X_MIN = 0;
+		static const int Y_MIN = 2;
+		static const unsigned short SCORE_HUD_WIDTH = 11;
 
 #ifdef SNAKE_UTILS_IN_GAME_DEBUG
 		static const char ADD_SNAKE_PIECE_BUTTON = 'a';
@@ -208,6 +211,14 @@ namespace TextSnake {
 	void MoveSnake(Snake& snake, const int x, const int y, Game& game);
 
 	/*
+	 * Checks whether the snake collided with a wall or with itself
+	 * and if it did, it will lose one life.
+	 * snk: Instance of the snake.
+	 * gm: Instance of the game.
+	 */
+	void DieOnCollision(const Snake& snk, Game& gm);
+
+	/*
 	 * On collision with an apple, the snake will eat it and increase its score.
 	 * snk: Instance of the snake.
 	 * gm: Instance of the game.
@@ -250,23 +261,42 @@ namespace TextSnake {
 	void SetNewTailPieceDirAndPos(const Snake& snake, TailPiece& tailPiece);
 
 	/*
+	 * Draws the HUD.
+	 * game: Instance of the game.
+	 */
+	inline void DrawHUD(const Game& game);
+
+	/*
+	 * Draws the score counter.
+	 * g: Instance of the game.
+	 * pos: Where to draw the counter.
+	 */
+	inline void DrawScore(const Game& g, const Vector2D& pos);
+
+	/*
+	 * Draws the lives counter.
+	 * g: Instance of the game.
+	 * pos: Where to draw the counter.
+	 */
+	inline void DrawLives(const Game& g, const Vector2D& pos);
+
+	/*
 	 * Draws the snake's head.
 	 * snake: Instance of the snake.
 	 */
-	void DrawHead(const Snake& snake);
+	inline void DrawHead(const Snake& snake);
 
 	/*
 	 * Draws the tail pieces.
 	 * snake: Instance of the snake.
 	 */
-	void DrawTail(const Snake& snake);
+	inline void DrawTail(const Snake& snake);
 
 	/*
 	 * Draws an apple.
 	 * appl: Apple to draw.
 	 */
-	void DrawApple(const Apple& appl);
-
+	inline void DrawApple(const Apple& appl);
 
 } /* namespace TextSnake */
 
