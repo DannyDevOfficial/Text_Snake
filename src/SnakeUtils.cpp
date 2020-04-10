@@ -329,13 +329,13 @@ namespace TextSnake {
 	}
 
 
-	void DieOnCollision(const Snake& snk, Game& gm) {
+	void DieOnCollision(Snake& snk, Game& gm) {
 		// Wall collisions.
 		// Snake position is the same as either border of the screen.
-		bool vWallCollision = (snk.currentPosition.y <= Constants::Y_MIN) ||
-				(snk.currentPosition.y >= CursesUtils::GetRows());
-		bool hWallCollision = (snk.currentPosition.x <= Constants::X_MIN) ||
-				(snk.currentPosition.x >= CursesUtils::GetColumns());
+		bool vWallCollision = (snk.currentPosition.y < Constants::Y_MIN) ||
+				(snk.currentPosition.y > CursesUtils::GetRows());
+		bool hWallCollision = (snk.currentPosition.x < Constants::X_MIN) ||
+				(snk.currentPosition.x > CursesUtils::GetColumns());
 
 		// Tail Collision.
 		bool tailCollision = false;
@@ -357,10 +357,51 @@ namespace TextSnake {
 			// Lose a life.
 			gm.lives--;
 
-			// TODO Implement the reset and restart functions.
-//			if (gm.lives > 0)	ResetGame(snk, gm);
+			// TODO Implement the restart functions.
+//			if (gm.lives > 0)	ResetSnake(snk, gm);
 //			else				RestartGame(snk, gm);
+
+			// TODO Change this after Restart has been implemented.
+			ResetSnake(snk, gm);
 		}
+	}
+
+
+	void ResetSnake(Snake& snake, const Game& game) {
+		// Middle of the screen.
+		int xMid = static_cast<int>(CursesUtils::GetColumns() / 2);
+		int yMid = static_cast<int>(CursesUtils::GetRows() / 2);
+
+		// Reset the snake position to the center of the screen.
+		int xPos = 0;
+		int yPos = 0;
+
+		// Random offset from the center.
+		int randomOffset = (rand() % 5) + 1;
+
+		if ((game.apple.position.x == xMid) && (game.apple.position.y == yMid)) {
+			// If an apple is located in the center, put the snake somewhere else.
+			xPos = xMid + randomOffset;
+			yPos = yMid + randomOffset;
+		} else {
+			// Snake is positioned in the center.
+			xPos = xMid;
+			yPos = yMid;
+		}
+
+		snake.currentPosition.x = xPos;
+		snake.currentPosition.y = yPos;
+
+		// Reset previous position.
+		snake.previousPosition.x = snake.currentPosition.x;
+		snake.previousPosition.y = snake.currentPosition.y;
+
+		// Reset direction.
+		snake.currentDirection = static_cast<Direction>(rand() % 4);
+		snake.previousDirection = snake.currentDirection;
+
+		// Clear the tail.
+		if (snake.tail.size() > 0)	snake.tail.clear();
 	}
 
 

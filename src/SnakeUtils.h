@@ -216,7 +216,15 @@ namespace TextSnake {
 	 * snk: Instance of the snake.
 	 * gm: Instance of the game.
 	 */
-	void DieOnCollision(const Snake& snk, Game& gm);
+	void DieOnCollision(Snake& snk, Game& gm);
+
+	/*
+	 * Resets the snake when it collides with something other than apples
+	 * and it has at least one life left.
+	 * snake: Instance of the snake.
+	 * game: Instance of the game.
+	 */
+	void ResetSnake(Snake& snake, const Game& game);
 
 	/*
 	 * On collision with an apple, the snake will eat it and increase its score.
