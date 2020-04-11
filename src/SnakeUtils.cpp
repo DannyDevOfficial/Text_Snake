@@ -29,9 +29,6 @@ namespace TextSnake {
 		// Spawn the first apple.
 		SpawnApple(mainGame, theSnake);
 
-		// TODO Remove the following line after the basic game is implemented.
-		mainGame.currentState = State::SHOW_MAIN_GAME;
-
 		// Flag that tells the game loop when to quit.
 		bool quit = false;
 
@@ -133,6 +130,9 @@ namespace TextSnake {
 		// Score is 0 at the start.
 		g.currentScore = 0;
 
+		// Initialize all menu entries.
+		InitMenu(g);
+
 		// TODO High scores should be loaded in when the game starts.
 
 
@@ -141,6 +141,45 @@ namespace TextSnake {
 
 		// Game state initially set to show main menu.
 		g.currentState = State::SHOW_MAIN_MENU;
+	}
+
+
+	void InitMenu(Game& game) {
+		// Position to use.
+		Vector2D pos;
+		// Set the y position.
+		// Take into account the position of the intro.
+		pos.y = static_cast<int>(CursesUtils::GetRows() / 2) - Constants::INTRO_TEXT_OFFSET;
+
+		// Entries.
+		MenuEntry entries[Constants::TOTAL_MAIN_MENU_ENTRIES];
+
+		// Entries texts.
+		// Play entry.
+		entries[0].text = "Play the game";
+		// High scores entry.
+		entries[1].text = "High Scores";
+
+		// Set all the entries.
+		for (std::size_t i = 0; i < Constants::TOTAL_MAIN_MENU_ENTRIES; i++) {
+			// Reset the x position to void the previous movement.
+			pos.x = static_cast<int>(CursesUtils::GetColumns() / 2);
+			// Center the entry based on the string's length.
+			pos.x -= static_cast<int>(std::strlen(entries[i].text.c_str()) / 2);
+
+			// The first entry will have a special offset.
+			if (i == 0)	pos.y += Constants::MENU_TEXT_DIST + Constants::FIRST_ENTRY_TEXT_OFFSET;
+			else		pos.y += Constants::MENU_TEXT_DIST;
+
+			// Set the entry.
+			entries[i].position.x = pos.x;
+			entries[i].position.y = pos.y;
+			entries[i].attribute = CursesUtils::Attribute::NORMAL;
+		}
+
+		// Add the entries to the vector.
+		for (std::size_t i = 0; i < Constants::TOTAL_MAIN_MENU_ENTRIES; i++)
+			game.mainMenuEntries.push_back(entries[i]);
 	}
 
 
@@ -254,6 +293,7 @@ namespace TextSnake {
 		switch (g.currentScreen) {
 			// Draw the main menu screen.
 			case Screen::MAIN_MENU:
+				DrawMainMenu(g);
 				break;
 			// Draw the in game screen.
 			case Screen::MAIN_GAME:
@@ -294,6 +334,50 @@ namespace TextSnake {
 
 		// Update the tail's position.
 		UpdateTailPiecesPosition(snake);
+	}
+
+
+	void DrawMainMenu(const Game& game) {
+		// Position.
+		Vector2D pos;
+		// Initially set to the middle of the screen.
+		pos.x = static_cast<int>(CursesUtils::GetColumns() / 2);
+		pos.y = static_cast<int>(CursesUtils::GetRows() / 2);
+
+		// String to draw.
+		std::string menuString = "";
+
+		// Intro.
+
+		// Set the intro string.
+		menuString = "TEXT SNAKE";
+		// Center the intro based on the string's length.
+		pos.x -= static_cast<int>(std::strlen(menuString.c_str()) / 2);
+		// Lift the intro string up a little.
+		pos.y -= Constants::INTRO_TEXT_OFFSET;
+		// Draw the text.
+		DrawText(menuString.c_str(), pos, CursesUtils::Attribute::BOLD);
+
+		// Draw the menu entries.
+		for (std::size_t i = 0; i < game.mainMenuEntries.size(); i++)
+			DrawText(game.mainMenuEntries[i].text.c_str(),
+			         game.mainMenuEntries[i].position,
+			         game.mainMenuEntries[i].attribute);
+
+		// Quit text.
+		menuString = "You can press (q) at any point in the game to quit.";
+		// Reset the x position to void the previous movement.
+		pos.x = static_cast<int>(CursesUtils::GetColumns() / 2);
+		// Center the intro based on the string's length.
+		pos.x -= static_cast<int>(std::strlen(menuString.c_str()) / 2);
+		// Move the string down a bit.
+		// Added more offset cause it's not part of the menu, just info.
+		// Taken into account all the entries before it.
+		pos.y += (Constants::MENU_TEXT_DIST + 7) +
+				(game.mainMenuEntries.size() * Constants::MENU_TEXT_DIST + Constants::FIRST_ENTRY_TEXT_OFFSET);
+
+		// Draw the text.
+		DrawText(menuString.c_str(), pos, CursesUtils::Attribute::STANDOUT);
 	}
 
 
@@ -413,12 +497,11 @@ namespace TextSnake {
 			// Lose a life.
 			gm.lives--;
 
-			// TODO Implement the restart functions.
-//			if (gm.lives > 0)	ResetSnake(snk, gm);
-//			else				RestartGame(snk, gm);
-
-			// TODO Change this after Restart has been implemented.
-			ResetSnake(snk, gm);
+			// When the snake has at least one life left, then reset it.
+			// On the other hand, when the snake has no more lives left, move onto the
+			// game over screen.
+			if (gm.lives > 0)	ResetSnake(snk, gm);
+			else				gm.currentState = State::SHOW_GAME_OVER;
 		}
 	}
 
@@ -698,6 +781,18 @@ namespace TextSnake {
 
 	void DrawApple(const Apple& appl) {
 		CursesUtils::PrintCharAtPosition(appl.sprite, appl.position.x, appl.position.y);
+	}
+
+
+	void DrawText(const char* text, const Vector2D& position, const CursesUtils::Attribute attribute) {
+		// Turn on the attribute.
+		CursesUtils::ToggleAttribute(attribute, true);
+
+		// Print the text at the position.
+		CursesUtils::PrintFormattedAtPosition(position.x, position.y, text);
+
+		// Turn off the attribute.
+		CursesUtils::ToggleAttribute(attribute, false);
 	}
 
 } /* namespace TextSnake */

@@ -38,6 +38,10 @@ namespace TextSnake {
 		static const unsigned short OFFSET_FROM_MIDSCREEN = 5;
 		static const unsigned int BASE_APPLE_POINTS = 10;
 		static const unsigned int SCORE_MULTIPLIER = 10;
+		static const unsigned short INTRO_TEXT_OFFSET = 7;
+		static const unsigned short MENU_TEXT_DIST = 2;
+		static const unsigned short FIRST_ENTRY_TEXT_OFFSET = 2;
+		static const unsigned int TOTAL_MAIN_MENU_ENTRIES = 2;
 
 #ifdef SNAKE_UTILS_IN_GAME_DEBUG
 		static const char ADD_SNAKE_PIECE_BUTTON = 'a';
@@ -130,6 +134,15 @@ namespace TextSnake {
 	};
 
 	/*
+	 * Menu entry used in main menu.
+	 */
+	struct MenuEntry {
+		std::string text;
+		Vector2D position;
+		CursesUtils::Attribute attribute;
+	};
+
+	/*
 	 * Represents the game e.g. states, scores etc.
 	 */
 	struct Game {
@@ -137,6 +150,7 @@ namespace TextSnake {
 		unsigned int currentScore;
 		Apple apple;
 		bool isAppleOnScreen;
+		std::vector<MenuEntry> mainMenuEntries;
 		std::vector<Score> highScores;
 		State currentState;
 		Screen currentScreen;
@@ -161,6 +175,12 @@ namespace TextSnake {
 	 * g: game to initialize.
 	 */
 	void InitGame(Game& g);
+
+	/*
+	 * Initializes all the menu entries.
+	 * game: Instance of the game.
+	 */
+	void InitMenu(Game& game);
 
 	/*
 	 * Analyzes the input and act accordingly.
@@ -202,6 +222,12 @@ namespace TextSnake {
 	 * snake: Instance of the snake.
 	 */
 	inline void UpdateMainGame(Game& game, Snake& snake);
+
+	/*
+	 * Draws the main menu related things.
+	 * game: Instance of the game.
+	 */
+	void DrawMainMenu(const Game& game);
 
 	/*
 	 * Draws the game related things.
@@ -331,6 +357,15 @@ namespace TextSnake {
 	 * appl: Apple to draw.
 	 */
 	inline void DrawApple(const Apple& appl);
+
+	/*
+	 * Draw the given text at the given position with the given attribute.
+	 * text: The text to write.
+	 * position: Where to draw the text.
+	 * attribute: What attribute to use. (Use NORMAL for no attributes)
+	 */
+	inline void DrawText(const char* text, const Vector2D& position, const CursesUtils::Attribute attribute);
+
 
 } /* namespace TextSnake */
 
