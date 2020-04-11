@@ -377,7 +377,7 @@ namespace TextSnake {
 		int yPos = 0;
 
 		// Random offset from the center.
-		int randomOffset = (rand() % 5) + 1;
+		int randomOffset = (rand() % Constants::OFFSET_FROM_MIDSCREEN) + 1;
 
 		if ((game.apple.position.x == xMid) && (game.apple.position.y == yMid)) {
 			// If an apple is located in the center, put the snake somewhere else.
@@ -416,10 +416,20 @@ namespace TextSnake {
 		// Increase length of the snake's tail.
 		MakeTailPiece(snk);
 
-		// TODO Make sure the user gains score whenever the snake eats an apple.
+		// Increase the score whenever the snake eats an apple.
+		gm.currentScore += CalcScore(snk);
 
 		// Spawn a new apple.
 		SpawnApple(gm, snk);
+	}
+
+
+	unsigned int CalcScore(const Snake& snake) {
+		// My score increase formula.
+		unsigned int scoreAddition = ceil(snake.tail.size() / 2) * Constants::SCORE_MULTIPLIER;
+
+		// Return the base points in case its the first apple the snake eats.
+		return (snake.tail.size() > 1) ? scoreAddition : Constants::BASE_APPLE_POINTS;
 	}
 
 

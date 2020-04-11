@@ -35,6 +35,9 @@ namespace TextSnake {
 		static const int X_MIN = 0;
 		static const int Y_MIN = 2;
 		static const unsigned short SCORE_HUD_WIDTH = 11;
+		static const unsigned short OFFSET_FROM_MIDSCREEN = 5;
+		static const unsigned int BASE_APPLE_POINTS = 10;
+		static const unsigned int SCORE_MULTIPLIER = 10;
 
 #ifdef SNAKE_UTILS_IN_GAME_DEBUG
 		static const char ADD_SNAKE_PIECE_BUTTON = 'a';
@@ -232,6 +235,12 @@ namespace TextSnake {
 	 * gm: Instance of the game.
 	 */
 	void EatAppleOnCollision(Snake& snk, Game& gm);
+
+	/*
+	 * Calculates the score based on the snake's length.
+	 * snake: Instance of the snake.
+	 */
+	unsigned int CalcScore(const Snake& snake);
 
 	/*
 	 * Spawns an apple whenever it's possible.
