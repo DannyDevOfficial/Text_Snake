@@ -32,6 +32,7 @@ namespace TextSnake {
 		static const CursesUtils::Color DEFAULT_COLOR = CursesUtils::Color::WHITE;
 		static const unsigned short TOTAL_LIVES = 3;
 		static const char QUIT_BUTTON = 'q';
+		static const char ENTER_KEY = '\n';
 		static const char SELECTED_BUTTON = '>';
 		static const int X_MIN = 0;
 		static const int Y_MIN = 2;
@@ -82,6 +83,15 @@ namespace TextSnake {
 		RIGHT,
 		DOWN,
 		LEFT
+	};
+
+	/*
+	 * Represents the directions taken by the menu selector.
+	 */
+	enum class SelectorDirection {
+		STILL,
+		UP,
+		DOWN
 	};
 
 	/*
@@ -143,6 +153,7 @@ namespace TextSnake {
 		Vector2D position;
 		CursesUtils::Attribute attribute;
 		bool isSelected;
+		Screen relatedScreen;
 	};
 
 	/*
@@ -154,6 +165,7 @@ namespace TextSnake {
 		Apple apple;
 		bool isAppleOnScreen;
 		std::vector<MenuEntry> mainMenuEntries;
+		SelectorDirection selectorDirection;
 		std::vector<Score> highScores;
 		State currentState;
 		Screen currentScreen;
@@ -191,7 +203,13 @@ namespace TextSnake {
 	 * g: Instance of the game.
 	 * s: Instance of the snake.
 	 */
-	void HandleInput(int& inpt, const Game& g, Snake& s);
+	void HandleInput(int& inpt, Game& g, Snake& s);
+
+	/*
+	 * Decides what state to go to when the enter key is pressed.
+	 * game: Game instance.
+	 */
+	void EnterKeyPressed(Game& game);
 
 	/*
 	 * Tweaks the FPS based on the snake direction and returns it.
@@ -218,6 +236,12 @@ namespace TextSnake {
 	 * game: Instance of the game.
 	 */
 	void UpdateScreen(Game& game);
+
+	/*
+	 * Runs the main menu related logic.
+	 * game: Game instance.
+	 */
+	void UpdateMainMenu(Game& game);
 
 	/*
 	 * Runs the main game related logic.

@@ -130,6 +130,9 @@ namespace TextSnake {
 		// Score is 0 at the start.
 		g.currentScore = 0;
 
+		// Selector is standing still.
+		g.selectorDirection = SelectorDirection::STILL;
+
 		// Initialize all menu entries.
 		InitMenu(g);
 
@@ -157,8 +160,10 @@ namespace TextSnake {
 		// Entries texts.
 		// Play entry.
 		entries[0].text = "Play the game";
+		entries[0].relatedScreen = Screen::MAIN_GAME;
 		// High scores entry.
 		entries[1].text = "High Scores";
+		entries[1].relatedScreen = Screen::HIGH_SCORES;
 
 		// Set all the entries.
 		for (std::size_t i = 0; i < Constants::TOTAL_MAIN_MENU_ENTRIES; i++) {
@@ -191,7 +196,7 @@ namespace TextSnake {
 	}
 
 
-	void HandleInput(int& inpt, const Game& g, Snake& s) {
+	void HandleInput(int& inpt, Game& g, Snake& s) {
 		// Store the current input.
 		inpt = CursesUtils::GetCharacter();
 
@@ -205,6 +210,11 @@ namespace TextSnake {
 						s.previousDirection = s.currentDirection;
 						s.currentDirection = Direction::UP;
 					}
+				} else if (g.currentState == State::SHOW_MAIN_MENU) {
+					// Move through the entry list upwards.
+
+					// Selector is moving up.
+					g.selectorDirection = SelectorDirection::UP;
 				}
 			}
 				break;
@@ -227,6 +237,11 @@ namespace TextSnake {
 						s.previousDirection = s.currentDirection;
 						s.currentDirection = Direction::DOWN;
 					}
+				} else if (g.currentState == State::SHOW_MAIN_MENU) {
+					// Move through the entry list downwards.
+
+					// Selector moves down.
+					g.selectorDirection = SelectorDirection::DOWN;
 				}
 			}
 				break;
@@ -241,13 +256,52 @@ namespace TextSnake {
 				}
 			}
 				break;
+			case static_cast<int>(Constants::ENTER_KEY): {
+				// Enter_key hit in the main menu.
+				if (g.currentState == State::SHOW_MAIN_MENU)	EnterKeyPressed(g);
+			}
+				break;
 #ifdef SNAKE_UTILS_IN_GAME_DEBUG
 			case Constants::ADD_SNAKE_PIECE_BUTTON: {
 				// When in game, add a piece to the snake's tail.
 				if (g.currentState == State::SHOW_MAIN_GAME)	MakeTailPiece(s);
 			}
-			break;
+				break;
 #endif
+		}
+	}
+
+
+	void EnterKeyPressed(Game& game) {
+		// Selected entry related screen.
+		Screen selectedRelatedScreen = Screen::MAIN_GAME;
+
+		// Find the selected entry in the menu.
+		for (std::size_t i = 0; i < game.mainMenuEntries.size(); i++) {
+			// Once the selected entry is found.
+			if (game.mainMenuEntries[i].isSelected) {
+				// Set related screen.
+				selectedRelatedScreen = game.mainMenuEntries[i].relatedScreen;
+
+				// Done. Don't keep looking for entries.
+				break;
+			}
+		}
+
+		// Check what entry that was and change state based on that.
+		switch (selectedRelatedScreen) {
+			case Screen::MAIN_MENU:
+				break;
+			case Screen::MAIN_GAME:
+				// Show the game.
+				game.currentState = State::SHOW_MAIN_GAME;
+				break;
+			case Screen::HIGH_SCORES:
+				// Show the high scores.
+				game.currentState = State::SHOW_HIGH_SCORES;
+				break;
+			case Screen::GAME_OVER:
+				break;
 		}
 	}
 
@@ -281,6 +335,7 @@ namespace TextSnake {
 		switch (g.currentState) {
 			// Run the main menu logic.
 			case State::SHOW_MAIN_MENU:
+				UpdateMainMenu(g);
 				break;
 			// Run main game logic.
 			case State::SHOW_MAIN_GAME:
@@ -333,6 +388,39 @@ namespace TextSnake {
 				game.currentScreen = Screen::HIGH_SCORES;
 				break;
 		}
+	}
+
+
+	void UpdateMainMenu(Game& game) {
+		// This function won't run when the selector isn't moving.
+		if (game.selectorDirection == SelectorDirection::STILL)
+			return;
+
+		// Find the currently selected entry.
+		for (std::size_t i = 0; i < game.mainMenuEntries.size(); i++) {
+			// When the selected entry is found.
+			if (game.mainMenuEntries[i].isSelected) {
+				// Deselect the currently selected one.
+				game.mainMenuEntries[i].isSelected = false;
+
+				// Pick next index based on the selection direction.
+				int nextIndex = 0;
+				if (game.selectorDirection == SelectorDirection::UP)		nextIndex = abs(static_cast<int>(i - 1));
+				else if (game.selectorDirection == SelectorDirection::DOWN)	nextIndex = static_cast<int>(i + 1);
+
+				// Wrap around the entries when the next one isn't available.
+				int nextSelectedIndex = nextIndex % game.mainMenuEntries.size();
+
+				// Select the next entry.
+				game.mainMenuEntries[nextSelectedIndex].isSelected = true;
+
+				// No need to look for another entry, we've already found it.
+				break;
+			}
+		}
+
+		// Selector has done moving.
+		game.selectorDirection = SelectorDirection::STILL;
 	}
 
 
