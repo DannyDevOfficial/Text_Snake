@@ -32,6 +32,7 @@ namespace TextSnake {
 		static const CursesUtils::Color DEFAULT_COLOR = CursesUtils::Color::WHITE;
 		static const unsigned short TOTAL_LIVES = 3;
 		static const char QUIT_BUTTON = 'q';
+		static const char SELECTED_BUTTON = '>';
 		static const int X_MIN = 0;
 		static const int Y_MIN = 2;
 		static const unsigned short SCORE_HUD_WIDTH = 11;
@@ -42,6 +43,7 @@ namespace TextSnake {
 		static const unsigned short MENU_TEXT_DIST = 2;
 		static const unsigned short FIRST_ENTRY_TEXT_OFFSET = 2;
 		static const unsigned int TOTAL_MAIN_MENU_ENTRIES = 2;
+
 
 #ifdef SNAKE_UTILS_IN_GAME_DEBUG
 		static const char ADD_SNAKE_PIECE_BUTTON = 'a';
@@ -140,6 +142,7 @@ namespace TextSnake {
 		std::string text;
 		Vector2D position;
 		CursesUtils::Attribute attribute;
+		bool isSelected;
 	};
 
 	/*
@@ -359,12 +362,20 @@ namespace TextSnake {
 	inline void DrawApple(const Apple& appl);
 
 	/*
-	 * Draw the given text at the given position with the given attribute.
+	 * Draws the given text at the given position with the given attribute.
 	 * text: The text to write.
 	 * position: Where to draw the text.
 	 * attribute: What attribute to use. (Use NORMAL for no attributes)
 	 */
 	inline void DrawText(const char* text, const Vector2D& position, const CursesUtils::Attribute attribute);
+
+	/*
+	 * Draws the given text at the given position underlined.
+	 * It also draws a little blinking selection marker next to it.
+	 * text: Text to write.
+	 * position: Where to draw the text.
+	 */
+	void DrawSelectedText(const char* text, const Vector2D& position);
 
 
 } /* namespace TextSnake */

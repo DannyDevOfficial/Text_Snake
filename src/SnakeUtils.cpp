@@ -168,8 +168,16 @@ namespace TextSnake {
 			pos.x -= static_cast<int>(std::strlen(entries[i].text.c_str()) / 2);
 
 			// The first entry will have a special offset.
-			if (i == 0)	pos.y += Constants::MENU_TEXT_DIST + Constants::FIRST_ENTRY_TEXT_OFFSET;
-			else		pos.y += Constants::MENU_TEXT_DIST;
+			// The first entry gets automatically selected.
+			if (i == 0) {
+				pos.y += Constants::MENU_TEXT_DIST + Constants::FIRST_ENTRY_TEXT_OFFSET;
+
+				entries[i].isSelected = true;
+			} else {
+				pos.y += Constants::MENU_TEXT_DIST;
+
+				entries[i].isSelected = false;
+			}
 
 			// Set the entry.
 			entries[i].position.x = pos.x;
@@ -359,10 +367,16 @@ namespace TextSnake {
 		DrawText(menuString.c_str(), pos, CursesUtils::Attribute::BOLD);
 
 		// Draw the menu entries.
-		for (std::size_t i = 0; i < game.mainMenuEntries.size(); i++)
-			DrawText(game.mainMenuEntries[i].text.c_str(),
-			         game.mainMenuEntries[i].position,
-			         game.mainMenuEntries[i].attribute);
+		for (std::size_t i = 0; i < game.mainMenuEntries.size(); i++) {
+			// Draw a selected entry differently.
+			if (game.mainMenuEntries[i].isSelected)
+				DrawSelectedText(game.mainMenuEntries[i].text.c_str(),
+				                 game.mainMenuEntries[i].position);
+			else
+				DrawText(game.mainMenuEntries[i].text.c_str(),
+				         game.mainMenuEntries[i].position,
+				         game.mainMenuEntries[i].attribute);
+		}
 
 		// Quit text.
 		menuString = "You can press (q) at any point in the game to quit.";
@@ -793,6 +807,27 @@ namespace TextSnake {
 
 		// Turn off the attribute.
 		CursesUtils::ToggleAttribute(attribute, false);
+	}
+
+
+	void DrawSelectedText(const char* text, const Vector2D& position) {
+		// Turn on the underline.
+		CursesUtils::ToggleAttribute(CursesUtils::Attribute::UNDERLINE, true);
+
+		// Draw the text.
+		CursesUtils::PrintFormattedAtPosition(position.x, position.y, text);
+
+		// Turn underline off.
+		CursesUtils::ToggleAttribute(CursesUtils::Attribute::UNDERLINE, false);
+
+		// Turn on the blink.
+		CursesUtils::ToggleAttribute(CursesUtils::Attribute::BLINK, true);
+
+		// Draw the selection marker to the left of the text.
+		CursesUtils::PrintCharAtPosition(Constants::SELECTED_BUTTON, position.x - 1, position.y);
+
+		// Turn blink off.
+		CursesUtils::ToggleAttribute(CursesUtils::Attribute::BLINK, false);
 	}
 
 } /* namespace TextSnake */
