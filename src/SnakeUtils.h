@@ -63,11 +63,8 @@ namespace TextSnake {
 	 */
 	enum class State {
 		SHOW_MAIN_MENU,
-		START_GAME,
 		SHOW_MAIN_GAME,
-		END_GAME,
 		SHOW_GAME_OVER,
-		LOAD_HIGH_SCORES,
 		SHOW_HIGH_SCORES
 	};
 
@@ -184,14 +181,34 @@ namespace TextSnake {
 	 * g: Instance of the current game.
 	 * s: Instance of the snake.
 	 */
-	void UpdateGame(Game& g, Snake& s);
+	void Update(Game& g, Snake& s);
 
 	/*
 	 * Draws the game to the screen.
 	 * g: Instance of the game.
 	 * s: Instance of the snake.
 	 */
-	void DrawGame(const Game& g, const Snake& s);
+	void Draw(const Game& g, const Snake& s);
+
+	/*
+	 * Changes the game's current screen based on the current state.
+	 * game: Instance of the game.
+	 */
+	void UpdateScreen(Game& game);
+
+	/*
+	 * Runs the main game related logic.
+	 * game: Instance of the game.
+	 * snake: Instance of the snake.
+	 */
+	inline void UpdateMainGame(Game& game, Snake& snake);
+
+	/*
+	 * Draws the game related things.
+	 * game: Instance of the game.
+	 * snake: Instance of the snake.
+	 */
+	void DrawMainGame(const Game& game, const Snake& snake);
 
 	/*
 	 * Updates the position of every piece of the snake's tail so they're ready for the next frame.

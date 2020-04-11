@@ -69,10 +69,10 @@ namespace TextSnake {
 					adjustedFPS = AdjustFPSbasedOnDirection(theSnake);
 
 					// Update the game logic.
-					UpdateGame(mainGame, theSnake);
+					Update(mainGame, theSnake);
 
 					// Draw the game.
-					DrawGame(mainGame, theSnake);
+					Draw(mainGame, theSnake);
 
 					// Refresh the screen to show the up to date game.
 					CursesUtils::RefreshScreen();
@@ -226,31 +226,87 @@ namespace TextSnake {
 	}
 
 
-	void UpdateGame(Game& g, Snake& s) {
-		// Only update the snake if in game.
-		if (g.currentState == State::SHOW_MAIN_GAME) {
-			// Update snake's position.
-			TellSnakeToMove(s, g);
+	void Update(Game& g, Snake& s) {
+		// Updates the current screen when the state changes.
+		UpdateScreen(g);
 
-			// Update the tail's position.
-			UpdateTailPiecesPosition(s);
+		// Run the correct update logic based on the current state.
+		switch (g.currentState) {
+			// Run the main menu logic.
+			case State::SHOW_MAIN_MENU:
+				break;
+			// Run main game logic.
+			case State::SHOW_MAIN_GAME:
+				UpdateMainGame(g, s);
+				break;
+			// Run game over logic.
+			case State::SHOW_GAME_OVER:
+				break;
+			// Run high scores logic.
+			case State::SHOW_HIGH_SCORES:
+				break;
 		}
 	}
 
 
-	void DrawGame(const Game& g, const Snake& s) {
-		// Only draw the snake if in game.
-		if (g.currentState == State::SHOW_MAIN_GAME) {
-			// Draw the HUD.
-			DrawHUD(g);
-
-			// Draw the snake.
-			DrawHead(s);
-			DrawTail(s);
-
-			// Draw the apple if there's one on screen.
-			if (g.isAppleOnScreen)	DrawApple(g.apple);
+	void Draw(const Game& g, const Snake& s) {
+		// Draw the game depending on what screen the game is on.
+		switch (g.currentScreen) {
+			// Draw the main menu screen.
+			case Screen::MAIN_MENU:
+				break;
+			// Draw the in game screen.
+			case Screen::MAIN_GAME:
+				DrawMainGame(g, s);
+				break;
+			// Draw game over screen.
+			case Screen::GAME_OVER:
+				break;
+			// Draw the high scores screen.
+			case Screen::HIGH_SCORES:
+				break;
 		}
+	}
+
+
+	void UpdateScreen(Game& game) {
+		// Change the current screen based on the current state.
+		switch (game.currentState) {
+			case State::SHOW_MAIN_MENU:
+				game.currentScreen = Screen::MAIN_MENU;
+				break;
+			case State::SHOW_MAIN_GAME:
+				game.currentScreen = Screen::MAIN_GAME;
+				break;
+			case State::SHOW_GAME_OVER:
+				game.currentScreen = Screen::GAME_OVER;
+				break;
+			case State::SHOW_HIGH_SCORES:
+				game.currentScreen = Screen::HIGH_SCORES;
+				break;
+		}
+	}
+
+
+	void UpdateMainGame(Game& game, Snake& snake) {
+		// Update snake's position.
+		TellSnakeToMove(snake, game);
+
+		// Update the tail's position.
+		UpdateTailPiecesPosition(snake);
+	}
+
+
+	void DrawMainGame(const Game& game, const Snake& snake) {
+		// Draw the HUD.
+		DrawHUD(game);
+
+		// Draw the snake.
+		DrawHead(snake);
+		DrawTail(snake);
+
+		// Draw the apple if there's one on screen.
+		if (game.isAppleOnScreen)	DrawApple(game.apple);
 	}
 
 
@@ -426,9 +482,9 @@ namespace TextSnake {
 
 	unsigned int CalcScore(const Snake& snake) {
 		// My score increase formula.
-		unsigned int scoreAddition = ceil(snake.tail.size() / 2) * Constants::SCORE_MULTIPLIER;
+		unsigned int scoreAddition = static_cast<unsigned int>(ceil(snake.tail.size() / 2) * Constants::SCORE_MULTIPLIER);
 
-		// Return the base points in case its the first apple the snake eats.
+		// Return the base points in case it's the first apple the snake eats.
 		return (snake.tail.size() > 1) ? scoreAddition : Constants::BASE_APPLE_POINTS;
 	}
 
