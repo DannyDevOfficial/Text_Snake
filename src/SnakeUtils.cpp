@@ -66,7 +66,7 @@ namespace TextSnake {
 					adjustedFPS = AdjustFPSbasedOnDirection(theSnake);
 
 					// Update the game logic.
-					Update(mainGame, theSnake);
+					Update(mainGame, theSnake, input);
 
 					// Draw the game.
 					Draw(mainGame, theSnake);
@@ -129,6 +129,10 @@ namespace TextSnake {
 
 		// Score is 0 at the start.
 		g.currentScore = 0;
+
+		// There's no final score when initializing.
+		g.finalScore.name = "PLAYER";
+		g.finalScore.score = 0;
 
 		// Selector is standing still.
 		g.selectorDirection = SelectorDirection::STILL;
@@ -258,7 +262,8 @@ namespace TextSnake {
 				break;
 			case static_cast<int>(Constants::ENTER_KEY): {
 				// Enter_key hit in the main menu.
-				if (g.currentState == State::SHOW_MAIN_MENU)	EnterKeyPressed(g);
+				if (g.currentState == State::SHOW_MAIN_MENU ||
+						g.currentState == State::SHOW_GAME_OVER)	EnterKeyPressed(g);
 			}
 				break;
 #ifdef SNAKE_UTILS_IN_GAME_DEBUG
@@ -273,6 +278,14 @@ namespace TextSnake {
 
 
 	void EnterKeyPressed(Game& game) {
+		// Change the current state to high scores when the user pressed enter from within the game over screen.
+		if (game.currentScreen == Screen::GAME_OVER) {
+			game.currentState = State::SHOW_HIGH_SCORES;
+
+			// Don't run the next instructions.
+			return;
+		}
+
 		// Selected entry related screen.
 		Screen selectedRelatedScreen = Screen::MAIN_GAME;
 
@@ -327,7 +340,7 @@ namespace TextSnake {
 	}
 
 
-	void Update(Game& g, Snake& s) {
+	void Update(Game& g, Snake& s, int in) {
 		// Updates the current screen when the state changes.
 		UpdateScreen(g);
 
@@ -343,6 +356,7 @@ namespace TextSnake {
 				break;
 			// Run game over logic.
 			case State::SHOW_GAME_OVER:
+				UpdateGameOver(g, in);
 				break;
 			// Run high scores logic.
 			case State::SHOW_HIGH_SCORES:
@@ -364,6 +378,7 @@ namespace TextSnake {
 				break;
 			// Draw game over screen.
 			case Screen::GAME_OVER:
+				DrawGameOver(g);
 				break;
 			// Draw the high scores screen.
 			case Screen::HIGH_SCORES:
@@ -433,6 +448,28 @@ namespace TextSnake {
 	}
 
 
+	void UpdateGameOver(Game& game, int input) {
+		// If the user entered a backspace, delete the last character in the string.
+		if (input == Constants::BACKSPACE_KEY &&
+				game.finalScore.name.length() > 0)
+			game.finalScore.name.erase(game.finalScore.name.length() - 1);
+
+		// Make sure the input is either a letter or a digit.
+		bool isCapitalLetter = (input >= Constants::START_CAP_LETTERS) &&
+				(input < (Constants::START_CAP_LETTERS + Constants::TOTAL_LETTERS));
+
+		bool isLowercaseLetter = (input >= Constants::START_LOW_LETTERS) &&
+				(input < (Constants::START_LOW_LETTERS + Constants::TOTAL_LETTERS));
+
+		bool isDigit = (input >= Constants::START_DIGITS) &&
+				(input < (Constants::START_DIGITS + Constants::TOTAL_DIGITS));
+
+		// Add the valid input to the string.
+		if (isCapitalLetter || isLowercaseLetter || isDigit)
+			game.finalScore.name += std::toupper(static_cast<char>(input));
+	}
+
+
 	void DrawMainMenu(const Game& game) {
 		// Position.
 		Vector2D pos;
@@ -493,6 +530,55 @@ namespace TextSnake {
 
 		// Draw the apple if there's one on screen.
 		if (game.isAppleOnScreen)	DrawApple(game.apple);
+	}
+
+
+	void DrawGameOver(const Game& game) {
+		// Position.
+		Vector2D pos;
+		// Initially set to the middle of the screen.
+		pos.x = static_cast<int>(CursesUtils::GetColumns() / 2);
+		pos.y = static_cast<int>(CursesUtils::GetRows() / 2);
+
+		// String to draw.
+		std::string gameOverString = "";
+
+		// Intro text.
+		gameOverString = "GAME OVER";
+		// Center the intro based on the string's length.
+		pos.x -= static_cast<int>(std::strlen(gameOverString.c_str()) / 2);
+		// Lift the intro string up a little.
+		pos.y -= Constants::INTRO_TEXT_OFFSET;
+		// Draw the text.
+		DrawText(gameOverString.c_str(), pos, CursesUtils::Attribute::BOLD);
+
+		// Set the high score string.
+		gameOverString = game.finalScore.name + "   ";
+		// Get the length of the above string.
+		int goLength = std::strlen(gameOverString.c_str());
+		// Recenter the position.
+		pos.x = static_cast<int>(CursesUtils::GetColumns() / 2);
+		// Center the intro based on the string's length.
+		pos.x -= static_cast<int>(goLength / 2);
+		// Move the string down.
+		pos.y += Constants::FIRST_ENTRY_TEXT_OFFSET + Constants::MENU_TEXT_DIST;
+		// Draw name.
+		DrawText(gameOverString.c_str(), pos, CursesUtils::Attribute::BLINK);
+		// Draw score.
+		pos.x += goLength;
+		DrawText(std::to_string(game.finalScore.score).c_str(), pos, CursesUtils::Attribute::NORMAL);
+
+		// Quit text.
+		gameOverString = "You can press (q) at any point in the game to quit.";
+		// Reset the x position to void the previous movement.
+		pos.x = static_cast<int>(CursesUtils::GetColumns() / 2);
+		// Center the intro based on the string's length.
+		pos.x -= static_cast<int>(std::strlen(gameOverString.c_str()) / 2);
+		// Move the string down a bit.
+		// Added more offset cause it's not part of the menu, just info.
+		pos.y += Constants::MENU_TEXT_DIST + 7;
+		// Draw the text.
+		DrawText(gameOverString.c_str(), pos, CursesUtils::Attribute::STANDOUT);
 	}
 
 
@@ -602,8 +688,18 @@ namespace TextSnake {
 			// When the snake has at least one life left, then reset it.
 			// On the other hand, when the snake has no more lives left, move onto the
 			// game over screen.
-			if (gm.lives > 0)	ResetSnake(snk, gm);
-			else				gm.currentState = State::SHOW_GAME_OVER;
+			if (gm.lives > 0) {
+				ResetSnake(snk, gm);
+			} else	{
+				// Set the lives count to 0.
+				gm.lives = 0;
+
+				// Set the final score.
+				gm.finalScore.score = gm.currentScore;
+
+				// Change state to game over.
+				gm.currentState = State::SHOW_GAME_OVER;
+			}
 		}
 	}
 

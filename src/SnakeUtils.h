@@ -33,6 +33,7 @@ namespace TextSnake {
 		static const unsigned short TOTAL_LIVES = 3;
 		static const char QUIT_BUTTON = 'q';
 		static const char ENTER_KEY = '\n';
+		static const unsigned int BACKSPACE_KEY = 127;
 		static const char SELECTED_BUTTON = '>';
 		static const int X_MIN = 0;
 		static const int Y_MIN = 2;
@@ -44,6 +45,11 @@ namespace TextSnake {
 		static const unsigned short MENU_TEXT_DIST = 2;
 		static const unsigned short FIRST_ENTRY_TEXT_OFFSET = 2;
 		static const unsigned int TOTAL_MAIN_MENU_ENTRIES = 2;
+		static const unsigned short TOTAL_DIGITS = 10;
+		static const unsigned short TOTAL_LETTERS = 26;
+		static const unsigned short START_CAP_LETTERS = 65;
+		static const unsigned short START_LOW_LETTERS = 97;
+		static const unsigned short START_DIGITS = 48;
 
 
 #ifdef SNAKE_UTILS_IN_GAME_DEBUG
@@ -162,6 +168,7 @@ namespace TextSnake {
 	struct Game {
 		unsigned short lives;
 		unsigned int currentScore;
+		Score finalScore;
 		Apple apple;
 		bool isAppleOnScreen;
 		std::vector<MenuEntry> mainMenuEntries;
@@ -221,8 +228,9 @@ namespace TextSnake {
 	 * Calls all the functions that deal with game updates.
 	 * g: Instance of the current game.
 	 * s: Instance of the snake.
+	 * in: The current input from the user.
 	 */
-	void Update(Game& g, Snake& s);
+	void Update(Game& g, Snake& s, int in);
 
 	/*
 	 * Draws the game to the screen.
@@ -244,6 +252,13 @@ namespace TextSnake {
 	void UpdateMainMenu(Game& game);
 
 	/*
+	 * Runs the game over related logic.
+	 * game: Instance of the game.
+	 * input: User's input.
+	 */
+	void UpdateGameOver(Game& game, int input);
+
+	/*
 	 * Runs the main game related logic.
 	 * game: Instance of the game.
 	 * snake: Instance of the snake.
@@ -262,6 +277,12 @@ namespace TextSnake {
 	 * snake: Instance of the snake.
 	 */
 	void DrawMainGame(const Game& game, const Snake& snake);
+
+	/*
+	 * Draws the game over screen.
+	 * game: Instance of the game.
+	 */
+	void DrawGameOver(const Game& game);
 
 	/*
 	 * Updates the position of every piece of the snake's tail so they're ready for the next frame.
