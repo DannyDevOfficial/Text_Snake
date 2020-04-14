@@ -50,6 +50,8 @@ namespace TextSnake {
 		static const unsigned short START_CAP_LETTERS = 65;
 		static const unsigned short START_LOW_LETTERS = 97;
 		static const unsigned short START_DIGITS = 48;
+		static const char* HIGH_SCORES_FILENAME = "HighScores.bin";
+		static const unsigned short MAX_HIGH_SCORES_ON_SCREEN = 8;
 
 
 #ifdef SNAKE_UTILS_IN_GAME_DEBUG
@@ -226,6 +228,25 @@ namespace TextSnake {
 	 * snake: Snake instance.
 	 */
 	void EnterKeyPressed(Game& game, Snake& snake);
+
+	/*
+	 * Saves the high scores to a file.
+	 * gm: Instance of the game.
+	 */
+	void SaveHighScores(const Game& gm);
+
+	/*
+	 * Compares two scores and returns the higher one.
+	 * score1: First score.
+	 * score2: Second score.
+	 */
+	bool GetHigher(const Score& score1, const Score& score2);
+
+	/*
+	 * Loads the high scores into the vector.
+	 * gm: Instance of the game.
+	 */
+	void LoadHighScores(Game& gm);
 
 	/*
 	 * Tweaks the FPS based on the snake direction and returns it.

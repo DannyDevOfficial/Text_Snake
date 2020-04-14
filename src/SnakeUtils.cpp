@@ -10,6 +10,7 @@
 #include <ctime>
 #include <cmath>
 #include <fstream>
+#include <algorithm>
 
 namespace TextSnake {
 
@@ -25,6 +26,12 @@ namespace TextSnake {
 		Snake theSnake;
 
 		FirstInit(mainGame, theSnake);
+
+		// Initialize all menu entries.
+		InitMenu(mainGame);
+
+		// Load high scores only once when the application is run.
+		LoadHighScores(mainGame);
 
 		// Flag that tells the game loop when to quit.
 		bool quit = false;
@@ -142,14 +149,14 @@ namespace TextSnake {
 		// Selector is standing still.
 		g.selectorDirection = SelectorDirection::STILL;
 
-		// Clear all menu entries.
-		if (g.mainMenuEntries.size() > 0)	g.mainMenuEntries.clear();
+		// Set the selected entry to the first one in the vector.
+		if (!g.mainMenuEntries.empty()) {
+			g.mainMenuEntries[0].isSelected = true;
 
-		// Initialize all menu entries.
-		InitMenu(g);
-
-		// TODO Load high scores.
-
+			// All the other entries are deselected.
+			for (std::size_t i = 1; i < g.mainMenuEntries.size(); i++)
+				g.mainMenuEntries[i].isSelected = false;
+		}
 
 		// Screen will be set to main menu at first.
 		g.currentScreen = Screen::MAIN_MENU;
@@ -290,9 +297,11 @@ namespace TextSnake {
 			// Add new high score.
 			game.highScores.push_back(game.finalScore);
 
-			// TODO Save high scores.
+			// Sort them out in descending order.
+			std::sort(game.highScores.begin(), game.highScores.end(), GetHigher);
 
-			// TODO Sort them out in descending order.
+			// Save high scores.
+			SaveHighScores(game);
 
 			game.currentState = State::SHOW_HIGH_SCORES;
 
@@ -335,6 +344,65 @@ namespace TextSnake {
 				break;
 			case Screen::GAME_OVER:
 				break;
+		}
+	}
+
+
+	void SaveHighScores(const Game& gm) {
+		// Make an output file stream for binary.
+		std::ofstream writeFile;
+
+		// Open the file or make a new one if it didn't exist before.
+		writeFile.open(Constants::HIGH_SCORES_FILENAME, std::ios_base::binary);
+
+		// Only write to the file if it was opened.
+		if (writeFile.is_open()) {
+			// Store the values of the vector into an array.
+			Score hScores[gm.highScores.size()];
+			std::copy(gm.highScores.begin(), gm.highScores.end(), hScores);
+
+			// Write high scores to the file.
+			writeFile.write(reinterpret_cast<char*>(hScores), sizeof(hScores));
+
+			// Close the file.
+			writeFile.close();
+		}
+	}
+
+
+	bool GetHigher(const Score& score1, const Score& score2) {
+		return (score1.score > score2.score) ? true : false;
+	}
+
+
+	void LoadHighScores(Game& gm) {
+		// Make an input file stream for binary.
+		std::ifstream readFile;
+
+		// Open the file in binary mode.
+		readFile.open(Constants::HIGH_SCORES_FILENAME, std::ios_base::binary);
+
+		// Only read if the file was opened.
+		if (readFile.is_open()) {
+			// Figure out the size of the file in bytes.
+			readFile.seekg(0, readFile.end);
+			long fileSizeInBytes = readFile.tellg();
+			readFile.seekg(0);
+
+			// Figure out how many high scores are in the file.
+			int numberOfHighScores = fileSizeInBytes / sizeof(Score);
+			// Allocate a buffer for the high scores.
+			Score hScores[numberOfHighScores];
+
+			// Read the high scores into the buffer.
+			readFile.read(reinterpret_cast<char*>(hScores), fileSizeInBytes);
+
+			// Put the high scores back into the vector.
+			for (std::size_t i = 0; i < numberOfHighScores; i++)
+				gm.highScores.push_back(hScores[i]);
+
+			// Close the file.
+			readFile.close();
 		}
 	}
 
@@ -638,6 +706,10 @@ namespace TextSnake {
 		// High scores.
 		std::string highScoreStr = "";
 		for (std::size_t i = 0; i < game.highScores.size(); i++) {
+			// Don't draw more than the max to the screen.
+			if (i >= Constants::MAX_HIGH_SCORES_ON_SCREEN)
+				break;
+
 			// Set the string.
 			highScoreStr = game.highScores[i].name + "   " + std::to_string(game.highScores[i].score);
 
