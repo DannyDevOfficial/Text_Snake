@@ -285,6 +285,12 @@ namespace TextSnake {
 	void DrawGameOver(const Game& game);
 
 	/*
+	 * Draws the high scores screen.
+	 * game: Instance of the game.
+	 */
+	void DrawHighScores(const Game& game);
+
+	/*
 	 * Updates the position of every piece of the snake's tail so they're ready for the next frame.
 	 * snake: Instance of the snake.
 	 */

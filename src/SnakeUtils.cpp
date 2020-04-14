@@ -29,6 +29,9 @@ namespace TextSnake {
 		// Spawn the first apple.
 		SpawnApple(mainGame, theSnake);
 
+		// TODO Remove this after testing.
+		mainGame.currentState = State::SHOW_HIGH_SCORES;
+
 		// Flag that tells the game loop when to quit.
 		bool quit = false;
 
@@ -261,9 +264,8 @@ namespace TextSnake {
 			}
 				break;
 			case static_cast<int>(Constants::ENTER_KEY): {
-				// Enter_key hit in the main menu.
-				if (g.currentState == State::SHOW_MAIN_MENU ||
-						g.currentState == State::SHOW_GAME_OVER)	EnterKeyPressed(g);
+				// Enter_key press is valid in every screen but the main game.
+				if (g.currentState != State::SHOW_MAIN_GAME)	EnterKeyPressed(g);
 			}
 				break;
 #ifdef SNAKE_UTILS_IN_GAME_DEBUG
@@ -281,6 +283,12 @@ namespace TextSnake {
 		// Change the current state to high scores when the user pressed enter from within the game over screen.
 		if (game.currentScreen == Screen::GAME_OVER) {
 			game.currentState = State::SHOW_HIGH_SCORES;
+
+			// Don't run the next instructions.
+			return;
+		} else if (game.currentScreen == Screen::HIGH_SCORES) {
+			// Change the current state to main menu when the user pressed enter from the high scores screen.
+			game.currentState = State::SHOW_MAIN_MENU;
 
 			// Don't run the next instructions.
 			return;
@@ -382,6 +390,7 @@ namespace TextSnake {
 				break;
 			// Draw the high scores screen.
 			case Screen::HIGH_SCORES:
+				DrawHighScores(g);
 				break;
 		}
 	}
@@ -513,7 +522,8 @@ namespace TextSnake {
 		// Added more offset cause it's not part of the menu, just info.
 		// Taken into account all the entries before it.
 		pos.y += (Constants::MENU_TEXT_DIST + 7) +
-				(game.mainMenuEntries.size() * Constants::MENU_TEXT_DIST + Constants::FIRST_ENTRY_TEXT_OFFSET);
+				(game.mainMenuEntries.size() * Constants::MENU_TEXT_DIST) +
+				Constants::FIRST_ENTRY_TEXT_OFFSET;
 
 		// Draw the text.
 		DrawText(menuString.c_str(), pos, CursesUtils::Attribute::STANDOUT);
@@ -568,6 +578,19 @@ namespace TextSnake {
 		pos.x += goLength;
 		DrawText(std::to_string(game.finalScore.score).c_str(), pos, CursesUtils::Attribute::NORMAL);
 
+		// Enter text.
+		gameOverString = "Press (enter) to confirm.";
+		// Reset the x position to void the previous movement.
+		pos.x = static_cast<int>(CursesUtils::GetColumns() / 2);
+		// Center the intro based on the string's length.
+		pos.x -= static_cast<int>(std::strlen(gameOverString.c_str()) / 2);
+		// Move the string down a bit.
+		// Added more offset cause it's not part of the menu, just info.
+		// Take into account all entries before this.
+		pos.y += Constants::MENU_TEXT_DIST + 7;
+		// Draw the text.
+		DrawText(gameOverString.c_str(), pos, CursesUtils::Attribute::UNDERLINE);
+
 		// Quit text.
 		gameOverString = "You can press (q) at any point in the game to quit.";
 		// Reset the x position to void the previous movement.
@@ -576,9 +599,71 @@ namespace TextSnake {
 		pos.x -= static_cast<int>(std::strlen(gameOverString.c_str()) / 2);
 		// Move the string down a bit.
 		// Added more offset cause it's not part of the menu, just info.
-		pos.y += Constants::MENU_TEXT_DIST + 7;
+		pos.y += Constants::MENU_TEXT_DIST;
 		// Draw the text.
 		DrawText(gameOverString.c_str(), pos, CursesUtils::Attribute::STANDOUT);
+	}
+
+
+	void DrawHighScores(const Game& game) {
+		// Position.
+		Vector2D pos;
+		// Initially set to the middle of the screen.
+		pos.x = static_cast<int>(CursesUtils::GetColumns() / 2);
+		// Set this to the very top of the screen.
+		pos.y = 0;
+
+		// String to draw.
+		std::string highScoresString = "";
+
+		// Intro text.
+		highScoresString = "HIGH SCORES";
+		// Center the intro based on the string's length.
+		pos.x -= static_cast<int>(std::strlen(highScoresString.c_str()) / 2);
+		// Draw the text.
+		DrawText(highScoresString.c_str(), pos, CursesUtils::Attribute::BOLD);
+
+		// High scores.
+		std::string highScoreStr = "";
+		for (std::size_t i = 0; i < game.highScores.size(); i++) {
+			// Set the string.
+			highScoreStr = game.highScores[i].name + "   " + std::to_string(game.highScores[i].score);
+
+			// Center the x position.
+			pos.x = static_cast<int>(CursesUtils::GetColumns() / 2);
+			// Align the string with the center based on the length of the string.
+			pos.x -= static_cast<int>(std::strlen(highScoreStr.c_str()) / 2);
+			// Lower the string a little.
+			pos.y += Constants::MENU_TEXT_DIST;
+
+			// Draw high score.
+			DrawText(highScoreStr.c_str(), pos, CursesUtils::Attribute::NORMAL);
+		}
+
+		// Enter text.
+		highScoresString = "Press (enter) to go back to main menu.";
+		// Reset the x position to void the previous movement.
+		pos.x = static_cast<int>(CursesUtils::GetColumns() / 2);
+		// Center the intro based on the string's length.
+		pos.x -= static_cast<int>(std::strlen(highScoresString.c_str()) / 2);
+		// Move the string down a bit.
+		// Added more offset cause it's not part of the menu, just info.
+		// Take into account all entries before this.
+		pos.y += Constants::MENU_TEXT_DIST + 2;
+		// Draw the text.
+		DrawText(highScoresString.c_str(), pos, CursesUtils::Attribute::UNDERLINE);
+
+		// Quit text.
+		highScoresString = "You can press (q) at any point in the game to quit.";
+		// Reset the x position to void the previous movement.
+		pos.x = static_cast<int>(CursesUtils::GetColumns() / 2);
+		// Center the intro based on the string's length.
+		pos.x -= static_cast<int>(std::strlen(highScoresString.c_str()) / 2);
+		// Move the string down a bit.
+		// Added more offset cause it's not part of the menu, just info.
+		pos.y += Constants::MENU_TEXT_DIST;
+		// Draw the text.
+		DrawText(highScoresString.c_str(), pos, CursesUtils::Attribute::STANDOUT);
 	}
 
 
