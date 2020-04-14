@@ -9,6 +9,7 @@
 
 #include <ctime>
 #include <cmath>
+#include <fstream>
 
 namespace TextSnake {
 
@@ -23,14 +24,7 @@ namespace TextSnake {
 		Game mainGame;
 		Snake theSnake;
 
-		InitGame(mainGame);
-		InitSnake(theSnake);
-
-		// Spawn the first apple.
-		SpawnApple(mainGame, theSnake);
-
-		// TODO Remove this after testing.
-		mainGame.currentState = State::SHOW_HIGH_SCORES;
+		FirstInit(mainGame, theSnake);
 
 		// Flag that tells the game loop when to quit.
 		bool quit = false;
@@ -88,6 +82,14 @@ namespace TextSnake {
 	}
 
 
+	void FirstInit(Game& gm, Snake& snk) {
+		// Initialize everything.
+		InitGame(gm);
+		InitSnake(snk);
+		SpawnApple(gm, snk);
+	}
+
+
 	void InitSnake(Snake& s) {
 		// Get the middle point of the screen.
 		unsigned int midX = CursesUtils::GetColumns() / 2;
@@ -140,10 +142,13 @@ namespace TextSnake {
 		// Selector is standing still.
 		g.selectorDirection = SelectorDirection::STILL;
 
+		// Clear all menu entries.
+		if (g.mainMenuEntries.size() > 0)	g.mainMenuEntries.clear();
+
 		// Initialize all menu entries.
 		InitMenu(g);
 
-		// TODO High scores should be loaded in when the game starts.
+		// TODO Load high scores.
 
 
 		// Screen will be set to main menu at first.
@@ -265,7 +270,7 @@ namespace TextSnake {
 				break;
 			case static_cast<int>(Constants::ENTER_KEY): {
 				// Enter_key press is valid in every screen but the main game.
-				if (g.currentState != State::SHOW_MAIN_GAME)	EnterKeyPressed(g);
+				if (g.currentState != State::SHOW_MAIN_GAME)	EnterKeyPressed(g, s);
 			}
 				break;
 #ifdef SNAKE_UTILS_IN_GAME_DEBUG
@@ -279,16 +284,23 @@ namespace TextSnake {
 	}
 
 
-	void EnterKeyPressed(Game& game) {
+	void EnterKeyPressed(Game& game, Snake& snake) {
 		// Change the current state to high scores when the user pressed enter from within the game over screen.
 		if (game.currentScreen == Screen::GAME_OVER) {
+			// Add new high score.
+			game.highScores.push_back(game.finalScore);
+
+			// TODO Save high scores.
+
+			// TODO Sort them out in descending order.
+
 			game.currentState = State::SHOW_HIGH_SCORES;
 
 			// Don't run the next instructions.
 			return;
 		} else if (game.currentScreen == Screen::HIGH_SCORES) {
-			// Change the current state to main menu when the user pressed enter from the high scores screen.
-			game.currentState = State::SHOW_MAIN_MENU;
+			// Initialize the game as if it was a brand new instance.
+			FirstInit(game, snake);
 
 			// Don't run the next instructions.
 			return;

@@ -187,6 +187,14 @@ namespace TextSnake {
 	void Start();
 
 	/*
+	 * Initializes everything as a brand new instance.
+	 * It's used when the game first runs.
+	 * gm: Instance of the game.
+	 * snk: Instance of the snake.
+	 */
+	void FirstInit(Game& gm, Snake& snk);
+
+	/*
 	 * Initializes the snake's data.
 	 * s: snake to initialize.
 	 */
@@ -215,8 +223,9 @@ namespace TextSnake {
 	/*
 	 * Decides what state to go to when the enter key is pressed.
 	 * game: Game instance.
+	 * snake: Snake instance.
 	 */
-	void EnterKeyPressed(Game& game);
+	void EnterKeyPressed(Game& game, Snake& snake);
 
 	/*
 	 * Tweaks the FPS based on the snake direction and returns it.
