@@ -26,7 +26,6 @@ namespace TextSnake {
 		static const char SPR_SNAKE_HEAD = '@';
 		static const char SPR_SNAKE_TAIL = '*';
 		static const char SPR_APPLE = 'o';
-
 		static const unsigned int DEFAULT_FPS = 6;
 		static const unsigned int SNAKE_DEFAULT_SPEED = 1;
 		static const CursesUtils::Color DEFAULT_COLOR = CursesUtils::Color::WHITE;
@@ -52,6 +51,8 @@ namespace TextSnake {
 		static const unsigned short START_DIGITS = 48;
 		static const char* HIGH_SCORES_FILENAME = "HighScores.bin";
 		static const unsigned short MAX_HIGH_SCORES_ON_SCREEN = 8;
+		static const short GREEN_ON_BLACK_ID = 1;
+		static const short RED_ON_BLACK_ID = 2;
 
 
 #ifdef SNAKE_UTILS_IN_GAME_DEBUG
@@ -195,6 +196,11 @@ namespace TextSnake {
 	 * snk: Instance of the snake.
 	 */
 	void FirstInit(Game& gm, Snake& snk);
+
+	/*
+	 * Initializes the color pairs.
+	 */
+	inline void InitColors();
 
 	/*
 	 * Initializes the snake's data.

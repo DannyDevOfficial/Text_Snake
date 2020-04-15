@@ -33,6 +33,9 @@ namespace TextSnake {
 		// Load high scores only once when the application is run.
 		LoadHighScores(mainGame);
 
+		// Make color pairs.
+		InitColors();
+
 		// Flag that tells the game loop when to quit.
 		bool quit = false;
 
@@ -94,6 +97,14 @@ namespace TextSnake {
 		InitGame(gm);
 		InitSnake(snk);
 		SpawnApple(gm, snk);
+	}
+
+
+	void InitColors() {
+		// Make a green for the snake.
+		CursesUtils::MakeColorPair(Constants::GREEN_ON_BLACK_ID, CursesUtils::Color::GREEN, CursesUtils::Color::BLACK);
+		// Make a red for the apple.
+		CursesUtils::MakeColorPair(Constants::RED_ON_BLACK_ID, CursesUtils::Color::RED, CursesUtils::Color::BLACK);
 	}
 
 
@@ -614,12 +625,25 @@ namespace TextSnake {
 		// Draw the HUD.
 		DrawHUD(game);
 
-		// Draw the snake.
+		// Draw the snake in green.
+		CursesUtils::ToggleColorPair(Constants::GREEN_ON_BLACK_ID, true);
+
 		DrawHead(snake);
 		DrawTail(snake);
 
+		// Turn off the color.
+		CursesUtils::ToggleColorPair(Constants::GREEN_ON_BLACK_ID, false);
+
 		// Draw the apple if there's one on screen.
-		if (game.isAppleOnScreen)	DrawApple(game.apple);
+		if (game.isAppleOnScreen) {
+			// Make it red.
+			CursesUtils::ToggleColorPair(Constants::RED_ON_BLACK_ID, true);
+
+			DrawApple(game.apple);
+
+			// Turn off the color.
+			CursesUtils::ToggleColorPair(Constants::RED_ON_BLACK_ID, false);
+		}
 	}
 
 
